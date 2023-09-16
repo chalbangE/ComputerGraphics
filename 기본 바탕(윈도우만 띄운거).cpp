@@ -14,13 +14,15 @@ std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<GLclampf> dis(0.0f, 1.0f);
 
+static int WINDOWX = 1000;
+static int WINDOWY = 1000;
 void main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
 	//--- 윈도우 생성하기
 	glutInit(&argc, argv); // glut 초기화
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA); // 디스플레이 모드 설정
 	glutInitWindowPosition(100, 100); // 윈도우의 위치 지정
-	glutInitWindowSize(800, 600); // 윈도우의 크기 지정
+	glutInitWindowSize(WINDOWX, WINDOWY); // 윈도우의 크기 지정
 	glutCreateWindow("Example1"); // 윈도우 생성 (윈도우 이름 )
 
 	//--- GLEW 초기화하기
@@ -50,6 +52,8 @@ GLvoid drawScene() //--- 콜백 함수: 그리기 콜백 함수
 
 GLvoid Reshape(int w, int h) //--- 콜백 함수: 다시 그리기 콜백 함수 
 {
+	WINDOWX = w;
+	WINDOWY = h
 	glViewport(0, 0, w, h);
 }
 
@@ -61,6 +65,7 @@ void Keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay(); // 화면 재 출력
 }void TimerFunction(int value)
 {
+	
 	switch (value)
 	{
 	case 1: {
