@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#2 사각형 4개.cpp">
+    <ClCompile Include="#3.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
