@@ -19,7 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#3.cpp" />
+    <None Include="fragment.glsl" />
+    <None Include="vertex.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="#6 사각형 애니메이션2.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

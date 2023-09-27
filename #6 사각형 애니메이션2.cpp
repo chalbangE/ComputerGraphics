@@ -276,7 +276,142 @@ void Clear()
 					}
 
 					rt.erase(rt.begin() + i);
-					break;
+					return;
+				}
+			}
+			for (int i = 0; i < movert.size(); ++i) {
+				if (movert[i].x - movert[i].w <= mx && movert[i].x + movert[i].w >= mx &&
+					movert[i].y - movert[i].h <= my && movert[i].y + movert[i].h >= my) {
+					rt.push_back(movert[i]);
+					movert.erase(movert.begin() + i);
+					--i;
+
+					GLfloat s = (rt.back().w / 2);
+
+					switch (rt.back().motion)
+					{
+						// 좌우상하 이동
+					case 0: {
+						// 상
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = s;
+						movert.back().my = 0.003f;
+						// 우
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = s;
+						movert.back().mx = 0.003f;
+						// 하
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = s;
+						movert.back().my = -0.003f;
+						// 좌
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = s;
+						movert.back().mx = -0.003f;
+						break;
+					}
+						  // 대각선 이동
+					case 1: {
+						// 좌상
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = s;
+						movert.back().my = 0.003f;
+						movert.back().mx = -0.003f;
+						// 우상
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = s;
+						movert.back().mx = 0.003f;
+						movert.back().my = 0.003f;
+						// 우하
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = s;
+						movert.back().mx = 0.003f;
+						movert.back().my = -0.003f;
+						// 좌하
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = s;
+						movert.back().mx = -0.003f;
+						movert.back().my = -0.003f;
+						break;
+					}
+						  // 8갈래로 이동
+					case 2: {
+						s = ((rt.back().w / 3) * 2);
+						// 상
+						movert.push_back(rt.back());
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().my = 0.003f;
+						// 우
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().mx = 0.003f;
+						// 하
+						movert.push_back(rt.back());
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().my = -0.003f;
+						// 좌
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().mx = -0.003f;
+						// 좌상
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().my = 0.003f;
+						movert.back().mx = -0.003f;
+						// 우상
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y + s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().mx = 0.003f;
+						movert.back().my = 0.003f;
+						// 우하
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x + s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().mx = 0.003f;
+						movert.back().my = -0.003f;
+						// 좌하
+						movert.push_back(rt.back());
+						movert.back().x = rt.back().x - s;
+						movert.back().y = rt.back().y - s;
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						movert.back().mx = -0.003f;
+						movert.back().my = -0.003f;
+						// 가운데
+						movert.push_back(rt.back());
+						movert.back().h = movert.back().w = rt.back().w / 3;
+						break;
+					}
+					default:
+						break;
+					}
+
+					rt.pop_back();
+					return;
 				}
 			}
 		}

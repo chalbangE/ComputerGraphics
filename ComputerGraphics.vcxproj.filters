@@ -15,7 +15,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#3.cpp">
+    <None Include="fragment.glsl">
+      <Filter>소스 파일</Filter>
+    </None>
+    <None Include="vertex.glsl">
+      <Filter>소스 파일</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="#6 사각형 애니메이션2.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
