@@ -91,7 +91,7 @@ GLvoid drawScene()
 		}
 		else {
 			glPointSize(3.0);
-			glDrawArrays(GL_LINE_LOOP, 0, cnt);
+			glDrawArrays(GL_LINES, 0, cnt);
 		}
 	}
 
@@ -133,6 +133,9 @@ void TimerFunction(int value)
 				std::cout << cnt << std::endl;
 			}
 			else if (half < 0.005f) {
+				for (int i = 0; i < MaxCnt; ++i) {
+					MxMy[i][0] = MxMy[i][1];
+				}
 				On = false;
 			}
 		}

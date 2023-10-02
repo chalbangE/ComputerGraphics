@@ -76,12 +76,6 @@ GLvoid drawScene()
 		glEnableVertexAttribArray(PosLocation);
 		glBindBuffer(GL_ARRAY_BUFFER, Vbo[i].pos); // VBO Bind
 		glVertexAttribPointer(PosLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-		// PosLocation			- Location 번호
-		// 3					- VerTex Size (x, y, z 속성의 Vec3이니 3) 
-		// GL_FLOAT, GL_FALSE	- 자료형과 Normalize 여부
-		// sizeof(float) * 3	- VerTex 마다의 공백 크기 (한 정점마다 메모리 간격)
-		//			(0과 같음)	- 0 일 경우 자동으로 2번째 인자(3) x 3번째 인자(float)로 설정
-		// 0					- 데이터 시작 offset (0이면 데이터 처음부터 시작)
 		glEnableVertexAttribArray(ColorLocation); // Vertex Position 정보 영역 시작 (Enable)
 		glBindBuffer(GL_ARRAY_BUFFER, Vbo[i].color); // VBO Bind
 		glVertexAttribPointer(ColorLocation, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
@@ -91,7 +85,6 @@ GLvoid drawScene()
 		case 0: {
 			glPointSize(5.0);
 			glDrawArrays(GL_POINTS, 0, 1);
-			std::cout << "rmfutek" << std::endl;
 			break;
 		}
 		case 1: {
