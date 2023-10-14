@@ -13,6 +13,7 @@
 #include <fstream>
 #include <vector>
 #include <random>
+#include <string>
 
 static std::random_device rd;
 static std::mt19937 gen(rd());
