@@ -70,9 +70,9 @@ void GLObj::objLoad(std::ifstream& path) {
 			//	face[faceIndex].z >> nomal[nomalIndex].z;
 		}
 	}
-	//pos.x = -(sum.x / vertexNum);
-	//pos.y = -(sum.y / vertexNum);
-	//pos.z = -(sum.z / vertexNum);
+	midpos.x = -(sum.x / vertexNum);
+	midpos.y = -(sum.y / vertexNum);
+	midpos.z = -(sum.z / vertexNum);
 	pos.x = 0;
 	pos.y = 0;
 	pos.z = 0;

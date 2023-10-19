@@ -1,9 +1,11 @@
 #include "GLLine.h"
 
 GLLine::GLLine(glm::vec3 m) : GLShapes(m) {
-	glm::vec3 color[4];
-	for (int i = 0; i < 4; ++i)
-		color[i] = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 color[6]{
+		{1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f},
+		{0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
+		{0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f},
+	};
 
 	glGenBuffers(1, &v_color);
 	glBindBuffer(GL_ARRAY_BUFFER, v_color);
@@ -11,7 +13,7 @@ GLLine::GLLine(glm::vec3 m) : GLShapes(m) {
 }
 
 void GLLine::draw() {
-	glDrawArrays(GL_LINES, 0, 4);
+	glDrawArrays(GL_LINES, 0, 6);
 }
 
 void GLLine::draw_prepare(int Location, std::string Location_str) {

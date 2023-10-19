@@ -32,7 +32,7 @@ GLObj cylinderObj;
 GLObj potObj;
 GLLine lineObj;
 
-int Mod = 0; // 기본 육면체 출력, 1은 사면체 출력
+int Mod = 0, Select = 2; // 기본 육면체 출력, 1은 사면체 출력
 int Rotation_Mod = 0; // 1 왼쪽으로 2 오른쪽으로 3 위로 4 아래로
 glm::vec3 Theta_plus{}, Revolve_Theta_plus{};
 
@@ -132,16 +132,36 @@ void TimerFunction(int value)
 	{
 	case 1: {
 		if (Mod == 0) {
-			cubeObj.rotate_theta += Theta_plus;
-			sphereObj.rotate_theta += Theta_plus;
-			cubeObj.revolve_theta += Revolve_Theta_plus;
-			sphereObj.revolve_theta += Revolve_Theta_plus;
+			if (Select == 0) {
+				cubeObj.rotate_theta += Theta_plus;
+				cubeObj.revolve_theta += Revolve_Theta_plus;
+			}
+			else if (Select == 1) {
+				sphereObj.rotate_theta += Theta_plus;
+				sphereObj.revolve_theta += Revolve_Theta_plus;
+			}
+			else {
+				cubeObj.rotate_theta += Theta_plus;
+				sphereObj.rotate_theta += Theta_plus;
+				cubeObj.revolve_theta += Revolve_Theta_plus;
+				sphereObj.revolve_theta += Revolve_Theta_plus;
+			}
 		}
 		else {
-			cylinderObj.rotate_theta += Theta_plus;
-			potObj.rotate_theta += Theta_plus;
-			cylinderObj.revolve_theta += Revolve_Theta_plus;
-			potObj.revolve_theta += Revolve_Theta_plus;
+			if (Select == 0) {
+				cylinderObj.rotate_theta += Theta_plus;
+				cylinderObj.revolve_theta += Revolve_Theta_plus;
+			}
+			else if (Select == 1) {
+				potObj.rotate_theta += Theta_plus;
+				potObj.revolve_theta += Revolve_Theta_plus;
+			}
+			else {
+				cylinderObj.rotate_theta += Theta_plus;
+				potObj.rotate_theta += Theta_plus;
+				cylinderObj.revolve_theta += Revolve_Theta_plus;
+				potObj.revolve_theta += Revolve_Theta_plus;
+			}
 		}
 		break;
 	}
@@ -245,6 +265,18 @@ void Keyboard(unsigned char key, int x, int y)
 
 		Revolve_Theta_plus = glm::vec3{ 0.0f, 0.0f, 0.0f };
 		Theta_plus = glm::vec3{ 0.0f, 0.0f, 0.0f };
+		break;
+	}
+	case '1': {
+		Select = 0;
+		break;
+	}
+	case '2': {
+		Select = 1;
+		break;
+	}
+	case '3': {
+		Select = 2;
 		break;
 	}
 	default:
@@ -352,6 +384,7 @@ void Init()
 		potObj.pos = glm::vec3{ 0.5f, 0.0f, 0.0f };
 		potObj.scale = glm::vec3{ 0.2f, 0.2f, 0.2f };
 
+		std::cout << potObj.face_cnt << std::endl;
 		std::vector<glm::vec3> color;
 		for (int i = 0; i < potObj.face_cnt * 3; ++i) {
 			glm::vec3 a{ colorRd(gen), colorRd(gen), colorRd(gen) };

@@ -19,4 +19,4 @@ static std::random_device rd;
 static std::mt19937 gen(rd());
 static std::uniform_real_distribution<GLclampf> colorRd(0.0f, 1.0f);
 
-extern GLuint V_pos_Cube, V_pos_Tetra, V_pos_Pyra, V_pos_Line;
+extern GLuint V_pos_Cube, V_pos_Tetra, V_pos_Pyra, V_pos_Line, V_pos_Rect;
