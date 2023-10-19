@@ -36,8 +36,6 @@ void GLObj::objLoad(std::ifstream& path) {
 	while (path >> bind) {
 		if (bind[0] == 'v' && bind[1] == '\0') {
 			path >> vertex[vertIndex].x >> vertex[vertIndex].y >> vertex[vertIndex].z;			
-			// std::cout << vertex[vertIndex].x << " " << vertex[vertIndex].y << " " << vertex[vertIndex].z << std::endl;
-
 
 			if (vertex[vertIndex].x > max.x)	max.x = vertex[vertIndex].x;
 			if (vertex[vertIndex].y > max.y)	max.y = vertex[vertIndex].y;
@@ -64,15 +62,11 @@ void GLObj::objLoad(std::ifstream& path) {
 			// std::cout << face[faceIndex].x << " "<< nomal[nomalIndex].x << " " << face[faceIndex].y << " "<< nomal[nomalIndex].y << " " << face[faceIndex].z << " " << nomal[nomalIndex].z << std::endl;
 			faceIndex++;
 			nomalIndex++;
-
-			//path >> face[faceIndex].x >> nomal[nomalIndex].x >> 
-			//	face[faceIndex].y >> nomal[nomalIndex].y >> 
-			//	face[faceIndex].z >> nomal[nomalIndex].z;
 		}
 	}
-	midpos.x = -(sum.x / vertexNum);
-	midpos.y = -(sum.y / vertexNum);
-	midpos.z = -(sum.z / vertexNum);
+	midpos.x = (sum.x / vertIndex);
+	midpos.y = (sum.y / vertIndex);
+	midpos.z = (sum.z / vertIndex);
 	pos.x = 0;
 	pos.y = 0;
 	pos.z = 0;
@@ -187,8 +181,25 @@ void GLObj::draw_prepare(int Location, std::string Location_str) {
 	else if ("World" == Location_str) {
 		glUniformMatrix4fv(Location, 1, GL_FALSE, glm::value_ptr(World_mat));
 	}
-	//else if ("Tex" == str) {
-	//	glBindBuffer(GL_ARRAY_BUFFER, m_TexVBO);
-	//	glVertexAttribPointer(Loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	//}
+}
+
+void GLObj::Update17()
+{
+	World_mat = glm::mat4(1.0);
+
+	World_mat = glm::scale(World_mat, Oscale);
+
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	World_mat = glm::translate(World_mat, pos);
+
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	World_mat = glm::scale(World_mat, scale);
+
+	World_mat = glm::translate(World_mat, -midpos);
 }

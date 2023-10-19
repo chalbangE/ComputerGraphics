@@ -15,5 +15,7 @@ public:
     void draw(std::string draw_Mod);
 
     void draw_prepare(int Location, std::string Location_str);
+
+    void Update17();
 };
 
