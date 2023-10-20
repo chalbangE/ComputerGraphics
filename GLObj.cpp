@@ -183,7 +183,7 @@ void GLObj::draw_prepare(int Location, std::string Location_str) {
 	}
 }
 
-void GLObj::Update17()
+void GLObj::Update()
 {
 	World_mat = glm::mat4(1.0);
 

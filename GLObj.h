@@ -1,5 +1,6 @@
 #pragma once
 #include "GLShapes.h"
+
 class GLObj :
     public GLShapes
 {
@@ -16,6 +17,6 @@ public:
 
     void draw_prepare(int Location, std::string Location_str);
 
-    void Update17();
+    void Update();
 };
 

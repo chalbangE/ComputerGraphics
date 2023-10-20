@@ -94,7 +94,7 @@ GLvoid drawScene()
 	// std::cout << (int)glIsEnabled(GL_CULL_FACE) << std::endl;
 
 	if (Mod != 4) {
-		ChickenDrumstickObj.Update17();
+		ChickenDrumstickObj.Update();
 	}
 	else {
 		ChickenDrumstickObj.World_mat = glm::mat4(1.0);
@@ -122,7 +122,7 @@ GLvoid drawScene()
 	ChickenDrumstickObj.draw("line");
 
 	if (Mod != 4) {
-		heartObj.Update17();
+		heartObj.Update();
 	}
 	else {
 		heartObj.World_mat = glm::mat4(1.0);
