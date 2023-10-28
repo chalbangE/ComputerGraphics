@@ -40,6 +40,11 @@ void GLRect::Update()
 	World_mat = glm::mat4(1.0);
 
 	World_mat = glm::scale(World_mat, Oscale);
+	
+	World_mat = glm::rotate(World_mat, glm::radians(trun_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(trun_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(trun_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
 	World_mat = glm::translate(World_mat, Anipos);
 
 	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -55,6 +60,7 @@ void GLRect::Update()
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
 
 	World_mat = glm::scale(World_mat, scale);
 

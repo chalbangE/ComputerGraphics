@@ -7,6 +7,7 @@ class GLObj :
 public:
     GLuint v_pos;
     GLint face_cnt = 0;
+    glm::vec3 Object_mid{ 0.f, 0.f, 0.f };
 
     GLObj(){}
     GLObj(glm::vec3 m);
@@ -18,5 +19,6 @@ public:
     void draw_prepare(int Location, std::string Location_str);
 
     void Update();
+    void Update20();
 };
 

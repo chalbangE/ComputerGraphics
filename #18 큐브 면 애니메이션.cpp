@@ -28,8 +28,8 @@ GLLine lineObj;
 
 bool Back_Cull = true;
 bool Tmod = false, Fmod = false, Smod = false, 
-		Bmod = false, Omod = false, Rmod = false;
-int Mod = 1, Rcnt = 0, Projection_Mod;
+		Bmod = false, Omod = false, Rmod = false, Ymod = false;
+int Mod = 1, Rcnt = 0, Projection_Mod = 0;
 glm::vec3 Fmod_Theta_plus = glm::vec3{ 0.0f, 0.0f, -2.0f };
 glm::vec3 Smod_Pos_plus = glm::vec3{ 0.0f, 0.005f, 0.0f };
 glm::vec3 Bmod_Scale_plus = glm::vec3{ -0.01f, -0.01f, -0.01f };
@@ -106,6 +106,7 @@ GLvoid drawScene()
 	lineObj.draw_prepare(ColorLocation, "Color");
 	lineObj.draw_prepare(WorldTransLocation, "World");
 	lineObj.draw();
+
 	// std::cout << (int)glIsEnabled(GL_CULL_FACE) << std::endl;
 
 	if (Mod == 0) {
@@ -177,6 +178,12 @@ void TimerFunction(int value)
 					Bmod_Scale_plus *= -1;
 				}
 			}
+
+			if (Ymod) {
+				for (int i = 0; i < rect.size(); ++i) {
+					rect[i].trun_theta += glm::vec3{ 0.f, 2.f, 0.f };
+				}
+			}
 		}
 		else if (Mod == 1) {
 			if (Omod) {
@@ -201,6 +208,12 @@ void TimerFunction(int value)
 					Omod_Theta_plus[Rcnt] *= -1;
 					Rcnt++;
 					cnt = 0;
+				}
+			}
+
+			if (Ymod) {
+				for (int i = 0; i < tri.size(); ++i) {
+					tri[i].revolve_theta += glm::vec3{ 0.f, 2.f, 0.f };
 				}
 			}
 		}
@@ -278,6 +291,12 @@ void Keyboard(unsigned char key, int x, int y)
 		else Projection_Mod = 0;
 		break;
 	}
+	case 'y':
+	case 'Y': {
+		if (Ymod == 0) Ymod = 1;
+		else Ymod = 0;
+		break;
+	}	
 	//	// ÀÚÀüÅ°
 	//	{
 	//case 'j':

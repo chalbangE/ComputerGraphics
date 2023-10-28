@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,11 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <None Include="3d_vertex_v2.glsl" />
     <None Include="fragment.glsl" />
-    <None Include="vertex.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#6 사각형 애니메이션2.cpp" />
+    <ClCompile Include="#20 탱크 21포함.cpp" />
+    <ClCompile Include="GLCamera.cpp" />
+    <ClCompile Include="GLLine.cpp" />
+    <ClCompile Include="GLObj.cpp" />
+    <ClCompile Include="GLRect.cpp" />
+    <ClCompile Include="GLShapes.cpp" />
+    <ClCompile Include="GLTri.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GLCamera.h" />
+    <ClInclude Include="GLLine.h" />
+    <ClInclude Include="GLObj.h" />
+    <ClInclude Include="GLRect.h" />
+    <ClInclude Include="GLShapes.h" />
+    <ClInclude Include="GLTri.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -111,6 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +143,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

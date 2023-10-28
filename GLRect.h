@@ -8,6 +8,7 @@ class GLRect :
 public:
 	GLuint v_pos;
 	glm::vec3 Anipos{ 0.f, 0.f, 0.f }; // 애니메이션을 위해 원점으로 원하는 만큼 이동하기
+	glm::vec3 trun_theta{ 0.f, 0.f, 0.f };
 
 	GLRect() {};
 	GLRect(glm::vec3 a);
