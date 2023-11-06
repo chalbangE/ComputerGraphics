@@ -18,5 +18,6 @@ public:
 	void draw_prepare(int Location, std::string Location_str);
 
 	void Update();
+	void Update22();
 };
 

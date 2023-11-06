@@ -41,10 +41,13 @@
     <ClCompile Include="GLTri.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="#20 탱크 21포함.cpp">
+    <ClCompile Include="GLCamera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="GLCamera.cpp">
+    <ClCompile Include="GLSlice.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Let’s Slice Polygon.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,6 +71,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="GLCamera.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="GLSlice.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

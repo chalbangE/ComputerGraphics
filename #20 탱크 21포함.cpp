@@ -72,7 +72,6 @@ GLvoid drawScene()
 	glEnableVertexAttribArray(WorldTransLocation);
 
 	// 카메라 변환
-	Camera.pos = glm::vec3{ 1.f, 1.f, 1.f };
 	Camera.Update();
 
 	// 투영 변환
@@ -107,74 +106,74 @@ GLvoid drawScene()
 		glDisable(GL_DEPTH_TEST);
 	}
 
-	{
-		glViewport(800, 400, 400, 400);
-		// 카메라 변환
-		Camera_Mat = glm::lookAt(glm::vec3{ 0.f, 1.f, 0.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 0.f, 1.f });
-		glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Camera_Mat));
+	//{
+	//	glViewport(800, 400, 400, 400);
+	//	// 카메라 변환
+	//	Camera_Mat = glm::lookAt(glm::vec3{ 0.f, 1.f, 0.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 0.f, 1.f });
+	//	glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Camera_Mat));
 
-		// 투영 변환
-		Projection_Mat = glm::mat4(1.0f);
-		Projection_Mat = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 50.f);
-		glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
+	//	// 투영 변환
+	//	Projection_Mat = glm::mat4(1.0f);
+	//	Projection_Mat = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 50.f);
+	//	glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		if (Back_Cull) {
-			glEnable(GL_DEPTH_TEST);
-		}
+	//	if (Back_Cull) {
+	//		glEnable(GL_DEPTH_TEST);
+	//	}
 
-		Floor.draw_prepare(PosLocation, "Pos");
-		Floor.draw_prepare(ColorLocation, "Color");
-		Floor.draw_prepare(WorldTransLocation, "World");
-		Floor.draw("solid");
+	//	Floor.draw_prepare(PosLocation, "Pos");
+	//	Floor.draw_prepare(ColorLocation, "Color");
+	//	Floor.draw_prepare(WorldTransLocation, "World");
+	//	Floor.draw("solid");
 
-		for (int i = 0; i < Tank.size(); ++i) {
-			Tank[i].draw_prepare(PosLocation, "Pos");
-			Tank[i].draw_prepare(ColorLocation, "Color");
-			Tank[i].draw_prepare(WorldTransLocation, "World");
-			Tank[i].draw("solid");
-		}
+	//	for (int i = 0; i < Tank.size(); ++i) {
+	//		Tank[i].draw_prepare(PosLocation, "Pos");
+	//		Tank[i].draw_prepare(ColorLocation, "Color");
+	//		Tank[i].draw_prepare(WorldTransLocation, "World");
+	//		Tank[i].draw("solid");
+	//	}
 
-		if (Back_Cull) {
-			glDisable(GL_DEPTH_TEST);
-		}
-	}
+	//	if (Back_Cull) {
+	//		glDisable(GL_DEPTH_TEST);
+	//	}
+	//}
 
-	{
-		glViewport(800, 0, 400, 400);
-		// 카메라 변환
-		Camera_Mat = glm::lookAt(glm::vec3{ 0.f, 0.f, 1.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
-		glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Camera_Mat));
+	//{
+	//	glViewport(800, 0, 400, 400);
+	//	// 카메라 변환
+	//	Camera_Mat = glm::lookAt(glm::vec3{ 0.f, 0.f, 1.f }, glm::vec3{ 0.f, 0.f, 0.f }, glm::vec3{ 0.f, 1.f, 0.f });
+	//	glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Camera_Mat));
 
-		// 투영 변환
-		Projection_Mat = glm::mat4(1.0f);
-		Projection_Mat = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 50.f);
-		glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
+	//	// 투영 변환
+	//	Projection_Mat = glm::mat4(1.0f);
+	//	Projection_Mat = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 50.f);
+	//	glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
 
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		if (Back_Cull) {
-			glEnable(GL_DEPTH_TEST);
-		}
+	//	if (Back_Cull) {
+	//		glEnable(GL_DEPTH_TEST);
+	//	}
 
-		// std::cout << (int)glIsEnabled(GL_CULL_FACE) << std::endl;
-		Floor.draw_prepare(PosLocation, "Pos");
-		Floor.draw_prepare(ColorLocation, "Color");
-		Floor.draw_prepare(WorldTransLocation, "World");
-		Floor.draw("solid");
+	//	// std::cout << (int)glIsEnabled(GL_CULL_FACE) << std::endl;
+	//	Floor.draw_prepare(PosLocation, "Pos");
+	//	Floor.draw_prepare(ColorLocation, "Color");
+	//	Floor.draw_prepare(WorldTransLocation, "World");
+	//	Floor.draw("solid");
 
-		for (int i = 0; i < Tank.size(); ++i) {
-			Tank[i].draw_prepare(PosLocation, "Pos");
-			Tank[i].draw_prepare(ColorLocation, "Color");
-			Tank[i].draw_prepare(WorldTransLocation, "World");
-			Tank[i].draw("solid");
-		}
+	//	for (int i = 0; i < Tank.size(); ++i) {
+	//		Tank[i].draw_prepare(PosLocation, "Pos");
+	//		Tank[i].draw_prepare(ColorLocation, "Color");
+	//		Tank[i].draw_prepare(WorldTransLocation, "World");
+	//		Tank[i].draw("solid");
+	//	}
 
-		if (Back_Cull) {
-			glDisable(GL_DEPTH_TEST);
-		}
-	}
+	//	if (Back_Cull) {
+	//		glDisable(GL_DEPTH_TEST);
+	//	}
+	//}
 
 	glDisableVertexAttribArray(PosLocation);
 	glDisableVertexAttribArray(ColorLocation);

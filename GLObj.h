@@ -8,6 +8,7 @@ public:
     GLuint v_pos;
     GLint face_cnt = 0;
     glm::vec3 Object_mid{ 0.f, 0.f, 0.f };
+    glm::vec3 Ani_mid{ 0.f, 0.f, 0.f };
 
     GLObj(){}
     GLObj(glm::vec3 m);
@@ -20,5 +21,6 @@ public:
 
     void Update();
     void Update20();
+    void Update22();
 };
 

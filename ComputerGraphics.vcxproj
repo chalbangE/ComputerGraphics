@@ -23,13 +23,14 @@
     <None Include="fragment.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#20 탱크 21포함.cpp" />
     <ClCompile Include="GLCamera.cpp" />
     <ClCompile Include="GLLine.cpp" />
     <ClCompile Include="GLObj.cpp" />
     <ClCompile Include="GLRect.cpp" />
     <ClCompile Include="GLShapes.cpp" />
+    <ClCompile Include="GLSlice.cpp" />
     <ClCompile Include="GLTri.cpp" />
+    <ClCompile Include="Let’s Slice Polygon.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -38,6 +39,7 @@
     <ClInclude Include="GLObj.h" />
     <ClInclude Include="GLRect.h" />
     <ClInclude Include="GLShapes.h" />
+    <ClInclude Include="GLSlice.h" />
     <ClInclude Include="GLTri.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

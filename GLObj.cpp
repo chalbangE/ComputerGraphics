@@ -67,9 +67,7 @@ void GLObj::objLoad(std::ifstream& path) {
 	midpos.x = (sum.x / vertIndex);
 	midpos.y = (sum.y / vertIndex);
 	midpos.z = (sum.z / vertIndex);
-	pos.x = 0;
-	pos.y = 0;
-	pos.z = 0;
+	pos = glm::vec3{ 0.f, 0.f, 0.f };
 
 	std::vector<glm::vec3> objpos;
 	for (int i = 0; i < faceIndex; ++i) {
@@ -90,74 +88,6 @@ void GLObj::objLoad(std::ifstream& path) {
 	delete[] vertex;
 	delete[] face;
 	delete[] nomal;
-	// char count[128]; -임시 문자열 배열로, 파일에서 읽은 데이터를 저장합니다.
-	//	int vertexnum = 0; -OBJ 파일에서 발견된 정점(버텍스)의 수를 추적하기 위한 변수입니다.
-	//	int facenum = 0; -OBJ 파일에서 발견된 면의 수를 추적하기 위한 변수입니다.
-	//	int uvnum = 0; -OBJ 파일에서 발견된 텍스처 좌표(UV)의 수를 추적하기 위한 변수입니다.
-	//	int vertIndex = 0; -정점 데이터를 읽을 때 현재 정점의 인덱스를 추적하기 위한 변수입니다.
-	//	int faceIndex = 0; -면 데이터를 읽을 때 현재 면의 인덱스를 추적하기 위한 변수입니다.
-	//	int uvIndex = 0; -텍스처 좌표 데이터를 읽을 때 현재 텍스처 좌표의 인덱스를 추적하기 위한 변수입니다.
-	//	glm::vec3 * vertex - 정점(버텍스) 좌표를 저장하는 동적 배열입니다.
-	//	glm::vec3 * face - 면을 나타내는 데이터를 저장하는 동적 배열입니다.
-	//	glm::vec3 * uvdata - 텍스처 좌표(UV) 데이터를 저장하는 동적 배열입니다.이 배열은 면의 텍스처 좌표를 저장합니다.
-	//	glm::vec2 * uv - 텍스처 좌표(UV) 값을 저장하는 동적 배열입니다.이 배열은 uvnum의 크기에 따라 동적으로 할당됩니다.
-	//	char bind[128]; -임시 문자열 배열로, 파일에서 읽은 데이터를 임시로 저장하는 데 사용됩니다.
-	/*
-	char count[128];
-	int vertexnum = 0; // 점 개수
-	int facenum = 0; // 면 개수
-	int uvnum = 0; // 이놈 머임?
-
-	//--- 1. 전체 버텍스 개수 및 삼각형 개수 세기
-	while (!feof(path)) {
-		fscanf(path, "%s", count);
-		if (count[0] == 'v' && count[1] == '\0')
-			vertexnum++;
-		else if (count[0] == 'f' && count[1] == '\0')
-			facenum++;
-		else if (count[0] == 'v' && count[1] == 't' && count[3] == '\0')
-			uvnum++;
-		memset(count, '\0', sizeof(count));
-	}
-	rewind(path);
-
-	int vertIndex = 0;
-	int faceIndex = 0;
-	int uvIndex = 0;
-
-	//--- 2. 메모리 할당
-	glm::vec3* vertex = new glm::vec3[vertexnum];
-	glm::vec3* face = new glm::vec3[facenum];
-	glm::vec3* uvdata = new glm::vec3[facenum];
-	glm::vec2* uv = new glm::vec2[uvnum];
-	char bind[128];
-
-	while (!feof(path)) {
-		fscanf(path, "%s", bind);
-		if (bind[0] == 'v' && bind[1] == '\0') {
-			fscanf(path, "%f %f %f\n", &vertex[vertIndex].x, &vertex[vertIndex].y, &vertex[vertIndex].z);
-			vertIndex++;
-		}
-		else if (bind[0] == 'f' && bind[1] == '\0') {
-			unsigned int temp_face[3], temp_uv[3], temp_normal[3];
-			fscanf(path, "%d/%d/%d %d/%d/%d %d/%d/%d\n",
-				&temp_face[0], &temp_uv[0], &temp_normal[0],
-				&temp_face[1], &temp_uv[1], &temp_normal[1],
-				&temp_face[2], &temp_uv[2], &temp_normal[2]);
-
-			face[faceIndex].x = temp_face[0];
-			face[faceIndex].y = temp_face[1];
-			face[faceIndex].z = temp_face[2];
-			uvdata[faceIndex].x = temp_uv[0];
-			uvdata[faceIndex].y = temp_uv[1];
-			uvdata[faceIndex].z = temp_uv[2];
-			faceIndex++;
-		}
-		else if (bind[0] == 'v' && bind[1] == 't' && bind[2] == '\0') {
-			fscanf(path, "%f %f\n", &uv[uvIndex].x, &uv[uvIndex].y);
-			uvIndex++;
-		}
-	}*/
 }
 
 void GLObj::draw(std::string draw_Mod) {
@@ -208,8 +138,6 @@ void GLObj::Update20()
 {
 	World_mat = glm::mat4(1.0);
 
-	World_mat = glm::scale(World_mat, Oscale);
-
 	World_mat = glm::translate(World_mat, pos - Object_mid);
 	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -221,6 +149,29 @@ void GLObj::Update20()
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
 	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	World_mat = glm::scale(World_mat, scale);
+
+	World_mat = glm::translate(World_mat, -midpos);
+}
+
+void GLObj::Update22()
+{
+	World_mat = glm::mat4(1.0);
+
+	World_mat = glm::translate(World_mat, Ani_mid);
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(revolve_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	World_mat = glm::translate(World_mat, -Ani_mid);
+
+	World_mat = glm::translate(World_mat, pos);
+
+	World_mat = glm::translate(World_mat, -Object_mid);
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	World_mat = glm::rotate(World_mat, glm::radians(rotate_theta.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	World_mat = glm::translate(World_mat, Object_mid);
 
 	World_mat = glm::scale(World_mat, scale);
 
