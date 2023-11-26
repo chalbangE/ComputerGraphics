@@ -74,19 +74,129 @@ public:
 		}
 	}
 };
+class Paticle : public GLShapes 
+{
+public:
+	glm::vec3 dis;
+	GLfloat r = Rrd(rd) / 6;
+	std::vector <glm::vec3> firstpos;
+	GLfloat Theta = Thetard(rd);
+	GLuint v_pos;
+	GLfloat alpha = 1.0f;
+
+	Paticle() {};
+	Paticle(glm::vec3 mouse) {
+		pos = mouse;
+		if (qkdgid(rd) == 1) {
+			dis = glm::vec3{ Disrd(rd) / 10, -Disrd(rd) / 10, 0.f };
+		}
+		else {
+			dis = glm::vec3{ -Disrd(rd) / 10, -Disrd(rd) / 10, 0.f };
+		}
+		GLfloat radian = Theta * 0.0174533f;
+		firstpos.clear();
+		for (int i = 0; i < 4; ++i) {
+			glm::vec3 m = { 0.0f, 0.0f, 1.0f };
+			m.x = pos.x + r * cos(radian);
+			m.y = pos.y + r * sin(radian);
+			firstpos.emplace_back(m);
+
+			Theta += 180;
+			radian = Theta * 0.0174533f;
+			m.x = pos.x + r * cos(radian);
+			m.y = pos.y + r * sin(radian);
+			firstpos.emplace_back(m);
+
+			Theta += 90;
+			radian = Theta * 0.0174533f;
+			m.x = pos.x + r * cos(radian);
+			m.y = pos.y + r * sin(radian);
+			firstpos.emplace_back(m);
+
+			Theta += 180;
+			radian = Theta * 0.0174533f;
+			m.x = pos.x + r * cos(radian);
+			m.y = pos.y + r * sin(radian);
+			firstpos.emplace_back(m);
+		}
+
+		std::vector <glm::vec3> color;
+		color.emplace_back(colorRd(gen) + 0.3f, colorRd(gen) + 0.3f, colorRd(gen) + 0.3f);
+		for (int i = 1; i < 4; ++i) {
+			color.emplace_back(color[0]);
+		}
+
+		glGenBuffers(1, &v_pos);
+		glBindBuffer(GL_ARRAY_BUFFER, v_pos);
+		glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &v_color);
+		glBindBuffer(GL_ARRAY_BUFFER, v_color);
+		glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+	};
+
+	void Update() {
+		Theta += 1.f;
+		alpha -= 0.01f;
+		pos += dis;
+		GLfloat radian = Theta * 0.0174533f;
+		firstpos.clear();
+
+		glm::vec3 m = { 0.0f, 0.0f, 1.0f };
+		m.x = pos.x + r * cos(radian);
+		m.y = pos.y + r * sin(radian);
+		firstpos.emplace_back(m);
+
+		Theta += 180;
+		radian = Theta * 0.0174533f;
+		m.x = pos.x + r * cos(radian);
+		m.y = pos.y + r * sin(radian);
+		firstpos.emplace_back(m);
+
+		Theta += 90;
+		radian = Theta * 0.0174533f;
+		m.x = pos.x + r * cos(radian);
+		m.y = pos.y + r * sin(radian);
+		firstpos.emplace_back(m);
+
+		Theta += 180;
+		radian = Theta * 0.0174533f;
+		m.x = pos.x + r * cos(radian);
+		m.y = pos.y + r * sin(radian);
+		firstpos.emplace_back(m);
+
+		glBindBuffer(GL_ARRAY_BUFFER, v_pos);
+		glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
+	}
+
+	void draw() {
+		glDrawArrays(GL_LINES, 0, 4);
+	}
+
+	void draw_prepare(int Location, std::string Location_str) {
+		if ("Pos" == Location_str) {
+			glBindBuffer(GL_ARRAY_BUFFER, v_pos);
+			glVertexAttribPointer(Location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		else if ("Color" == Location_str) {
+			glBindBuffer(GL_ARRAY_BUFFER, v_color);
+			glVertexAttribPointer(Location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+	}
+};
 
 GLuint vao;
 float winSizex = 800, winSizey = 800;
 
 std::vector <GLSlice> Polygon1;
 std::vector <GLSlice> Basket_In_Polygon;
+std::vector <Paticle> paticle;
 GLLine MOUSE;
 glm::vec3 mouse[2];
 bool Lbt = false, Route = false;
 std::string Draw_Mod = "solid";
 GLfloat Speed = 1.f;
 Basket basket;
-
+  
 
 int main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -121,7 +231,9 @@ GLvoid drawScene()
 	// Location 번호 저장
 	int PosLocation = glGetAttribLocation(shaderProgramID, "in_Position"); //	: 0
 	int ColorLocation = glGetAttribLocation(shaderProgramID, "in_Color"); //	: 1
+	int AlphaLocation = glGetUniformLocation(shaderProgramID, "alpha"); //	: 2
 	glEnableVertexAttribArray(PosLocation);
+	glEnableVertexAttribArray(AlphaLocation);
 	glEnableVertexAttribArray(ColorLocation); // Vertex Position 정보 영역 시작 (Enable)
 
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -134,7 +246,7 @@ GLvoid drawScene()
 				glVertexAttribPointer(PosLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
 				glBindBuffer(GL_ARRAY_BUFFER, Polygon1[i].line_color);
 				glVertexAttribPointer(ColorLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
+				glUniform1f(AlphaLocation, 1.f);
 				glDrawArrays(GL_LINES, 0, Polygon1[i].line_cnt);
 			}
 		}
@@ -144,26 +256,23 @@ GLvoid drawScene()
 		Basket_In_Polygon[i].Update();
 		Basket_In_Polygon[i].draw_prepare(PosLocation, "Pos");
 		Basket_In_Polygon[i].draw_prepare(ColorLocation, "Color");
+		glUniform1f(AlphaLocation, 1.f);
 		Basket_In_Polygon[i].draw(Draw_Mod);
 	}
 
+	std::vector<GLuint> todelete;
 	for (int i = 0; i < Polygon1.size(); ++i) {
 		Polygon1[i].Update(Speed, basket.firstpos);
 		Polygon1[i].dis.y -= 0.0003f * Speed;
 		Polygon1[i].draw_prepare(PosLocation, "Pos");
 		Polygon1[i].draw_prepare(ColorLocation, "Color");
+		glUniform1f(AlphaLocation, 1.f);
 		Polygon1[i].draw(Draw_Mod);
 		if (!Polygon1[i].on) {
-			glDeleteBuffers(1, &Polygon1[i].v_pos);
-			glDeleteBuffers(1, &Polygon1[i].v_color);
-			glDeleteBuffers(1, &Polygon1[i].line_pos);
-			glDeleteBuffers(1, &Polygon1[i].line_color);
 			Polygon1.erase(Polygon1.begin() + i);
 			--i;
 		}
 		else if (Polygon1[i].basket_in) {
-			glDeleteBuffers(1, &Polygon1[i].line_pos);
-			glDeleteBuffers(1, &Polygon1[i].line_color);
 			Basket_In_Polygon.push_back(Polygon1[i]);
 			Basket_In_Polygon.back().dis = basket.dis;
 			Polygon1.erase(Polygon1.begin() + i);
@@ -174,16 +283,32 @@ GLvoid drawScene()
 	basket.Update(Basket_In_Polygon);
 	basket.draw_prepare(PosLocation, "Pos");
 	basket.draw_prepare(ColorLocation, "Color");
+	glUniform1f(AlphaLocation, 1.f);
 	basket.draw();
 
 	if (Lbt) {
 		MOUSE.draw_prepareMouse(PosLocation, "Pos");
 		MOUSE.draw_prepareMouse(ColorLocation, "Color");
+		glUniform1f(AlphaLocation, 1.f);
 		MOUSE.drawMouse();
 	}
-	
+	for (int i = 0; i < paticle.size(); ++i) {
+		paticle[i].Update();
+		paticle[i].draw_prepare(PosLocation, "Pos");
+		paticle[i].draw_prepare(ColorLocation, "Color");
+		glUniform1f(AlphaLocation, paticle[i].alpha);
+		paticle[i].draw();
+
+		if (paticle[i].alpha < 0.f) {
+			glDeleteVertexArrays(1, &paticle[i].v_color);
+			glDeleteVertexArrays(1, &paticle[i].v_pos);
+			paticle.erase(paticle.begin() + i);
+			--i;
+		}
+	}
 	glDisableVertexAttribArray(PosLocation);
 	glDisableVertexAttribArray(ColorLocation);
+	glDisableVertexAttribArray(AlphaLocation);
 
 	glutSwapBuffers(); //--- 화면에 출력하기
 }
@@ -247,6 +372,13 @@ void TimerFunction(int value)
 		glutTimerFunc(800, TimerFunction, 2);
 		break;
 	}
+	case 3: {
+		if (Lbt) {
+			paticle.emplace_back(mouse[1]);
+			glutTimerFunc(50, TimerFunction, 3);
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -265,12 +397,14 @@ void Mouse(int button, int state, int x, int y)
 			mouse[0] = glm::vec3{ m.x, m.y, 1.f };
 			mouse[1] = glm::vec3{ m.x, m.y, 1.f };
 			Lbt = true;
+			glutTimerFunc(50, TimerFunction, 3);
 			glBindBuffer(GL_ARRAY_BUFFER, MOUSE.v_pos);
 			glBufferData(GL_ARRAY_BUFFER, sizeof(mouse), mouse, GL_STATIC_DRAW);
 		}
 	}
 	else if (state == GLUT_UP) {
 		if (button == GLUT_LEFT_BUTTON) {
+			// std::cout << "SSSSSSSSSSSSSSSSSSSS" << std::endl;
 			Lbt = false;
 			int size = Polygon1.size();
 
@@ -452,6 +586,7 @@ void Init()
 	glGenBuffers(1, &MOUSE.v_pos);
 
 	basket = Basket(1);
+	Polygon1.reserve(100);
 }
 
 GLvoid Reshape(int w, int h)
@@ -503,7 +638,7 @@ void make_vertexShaders()
 
 void make_fragmentShaders()
 {
-	fragmentSource = filetobuf("fragment.glsl");
+	fragmentSource = filetobuf("slice_fragment.glsl");
 	//--- 프래그먼트 세이더 객체 만들기
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	//--- 세이더 코드를 세이더 객체에 넣기

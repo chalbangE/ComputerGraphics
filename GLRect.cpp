@@ -12,6 +12,19 @@ GLRect::GLRect(glm::vec3 m) : GLShapes(m) {
 	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
 }
 
+GLRect::GLRect(int a) {
+	glm::vec3 color[6];
+	GLfloat c = colorRd(gen) - 0.1f;
+	color[0] = { c, c, c };
+	for (int i = 1; i < 6; ++i) {
+		color[i] = color[0];
+	}
+
+	glGenBuffers(1, &v_color);
+	glBindBuffer(GL_ARRAY_BUFFER, v_color);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(color), color, GL_STATIC_DRAW);
+}
+
 void GLRect::draw(std::string draw_Mod) {
 	if ("solid" == draw_Mod)
 		glDrawArrays(GL_TRIANGLES, 0, 6);

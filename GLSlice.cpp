@@ -37,23 +37,13 @@ GLSlice::GLSlice() {
 
 	std::vector <glm::vec3> move;
 	std::vector <glm::vec3> col;
-	for (int k = 1; k < firstpos.size() - 1; ++k) {
-		move.push_back(firstpos[0]	);
-		col.push_back(color[0]);
-	
-		move.push_back(firstpos[k]);
-		col.push_back(color[k]);
-	
-		move.push_back(firstpos[k + 1]);
-		col.push_back(color[k + 1]);
-	}
 
 	glGenBuffers(1, &v_pos);
 	glBindBuffer(GL_ARRAY_BUFFER, v_pos);
-	glBufferData(GL_ARRAY_BUFFER, move.size() * sizeof(glm::vec3), move.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
 	glGenBuffers(1, &v_color);
 	glBindBuffer(GL_ARRAY_BUFFER, v_color);
-	glBufferData(GL_ARRAY_BUFFER, col.size() * sizeof(glm::vec3), col.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
 
 	move.clear();
 	col.clear();
@@ -104,38 +94,24 @@ GLSlice::GLSlice(std::vector <glm::vec3> first, GLfloat dis_x)
 	}
 	pos = sum / glm::vec3{ summit_cnt, summit_cnt, summit_cnt };
 
-	std::vector <glm::vec3> move;
-	std::vector <glm::vec3> col;
-	for (int k = 1; k < firstpos.size() - 1; ++k) {
-		move.push_back(firstpos[0]);
-		col.push_back(color[0]);
-
-		move.push_back(firstpos[k]);
-		col.push_back(color[k]);
-
-		move.push_back(firstpos[k + 1]);
-		col.push_back(color[k + 1]);
-	}
-
 	glGenBuffers(1, &v_pos);
 	glBindBuffer(GL_ARRAY_BUFFER, v_pos);
-	glBufferData(GL_ARRAY_BUFFER, move.size() * sizeof(glm::vec3), move.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
 	glGenBuffers(1, &v_color);
 	glBindBuffer(GL_ARRAY_BUFFER, v_color);
-	glBufferData(GL_ARRAY_BUFFER, col.size() * sizeof(glm::vec3), col.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
 }
 
 GLSlice::~GLSlice()
-{ }
+{ 
+}
 
 void GLSlice::draw(std::string draw_Mod) {
 	if ("solid" == draw_Mod) {
-		for (int i = 0; i < (summit_cnt - 2) * 3; i += 3)
-			glDrawArrays(GL_TRIANGLES, i, 3);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, summit_cnt);
 	}
 	else if ("line" == draw_Mod) {
-		for (int i = 0; i < (summit_cnt - 2) * 3; i += 3)
-			glDrawArrays(GL_LINE_LOOP, i, 3);
+		glDrawArrays(GL_LINE_LOOP, 0, summit_cnt);
 	}
 
 }
@@ -156,14 +132,8 @@ void GLSlice::Update() {
 		firstpos[i] += dis;
 	}
 
-	std::vector <glm::vec3> move;
-	for (int k = 1; k < firstpos.size() - 1; ++k) {
-		move.push_back(firstpos[0]);
-		move.push_back(firstpos[k]);
-		move.push_back(firstpos[k + 1]);
-	}
 	glBindBuffer(GL_ARRAY_BUFFER, v_pos);
-	glBufferData(GL_ARRAY_BUFFER, move.size() * sizeof(glm::vec3), move.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
 }
 
 void GLSlice::Update(GLfloat Speed, glm::vec3 basket[4]) {
@@ -209,12 +179,6 @@ void GLSlice::Update(GLfloat Speed, glm::vec3 basket[4]) {
 		}
 	}
 
-	std::vector <glm::vec3> move;
-	for (int k = 1; k < firstpos.size() - 1; ++k) {
-		move.push_back(firstpos[0]);
-		move.push_back(firstpos[k]);
-		move.push_back(firstpos[k + 1]);
-	}	
 	glBindBuffer(GL_ARRAY_BUFFER, v_pos);
-	glBufferData(GL_ARRAY_BUFFER, move.size() * sizeof(glm::vec3), move.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, firstpos.size() * sizeof(glm::vec3), firstpos.data(), GL_STATIC_DRAW);
 }

@@ -10,5 +10,7 @@ public:
 	glm::mat4 Camera_Mat;
 
 	void Update();
+	void Top_Update();
+	void draw_prepare(int Location, std::string Location_str);
 };
 

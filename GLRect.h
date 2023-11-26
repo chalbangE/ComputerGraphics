@@ -12,6 +12,7 @@ public:
 
 	GLRect() {};
 	GLRect(glm::vec3 a);
+	GLRect(int a);
 	
 	void draw(std::string draw_Mod);
 

@@ -50,8 +50,4 @@ void GLLine::draw_prepareMouse(int Location, std::string Location_str) {
 	else if ("World" == Location_str) {
 		glUniformMatrix4fv(Location, 1, GL_FALSE, glm::value_ptr(World_mat));
 	}
-	//else if ("Tex" == str) {
-	//	glBindBuffer(GL_ARRAY_BUFFER, m_TexVBO);
-	//	glVertexAttribPointer(Loc, 2, GL_FLOAT, GL_FALSE, 0, 0);
-	//}
 }

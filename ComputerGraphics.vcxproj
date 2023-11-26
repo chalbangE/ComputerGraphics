@@ -19,29 +19,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="3d_vertex_v2.glsl" />
-    <None Include="fragment.glsl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="GLCamera.cpp" />
+    <ClCompile Include="GLLight.cpp" />
     <ClCompile Include="GLLine.cpp" />
     <ClCompile Include="GLObj.cpp" />
-    <ClCompile Include="GLRect.cpp" />
     <ClCompile Include="GLShapes.cpp" />
-    <ClCompile Include="GLSlice.cpp" />
-    <ClCompile Include="GLTri.cpp" />
-    <ClCompile Include="Let’s Slice Polygon.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="숙제 2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLCamera.h" />
+    <ClInclude Include="GLLight.h" />
     <ClInclude Include="GLLine.h" />
     <ClInclude Include="GLObj.h" />
-    <ClInclude Include="GLRect.h" />
     <ClInclude Include="GLShapes.h" />
-    <ClInclude Include="GLSlice.h" />
-    <ClInclude Include="GLTri.h" />
     <ClInclude Include="stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="3d_vertex_v4_light.glsl" />
+    <None Include="light_fragment_v2.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
