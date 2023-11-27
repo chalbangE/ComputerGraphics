@@ -15,6 +15,7 @@ public:
     glm::vec3 velocity{ 0.f, 0.f, 0.f };
     glm::mat4 Normal_mat{};
 
+
     GLObj(){}
     GLObj(glm::vec3 m);
 

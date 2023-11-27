@@ -28,6 +28,41 @@ using namespace std;
 static std::uniform_real_distribution<GLfloat> VRd(0.005f, 0.01f);
 static std::uniform_int_distribution<int> VVRd(0, 1);
 
+class Ray {
+public:
+	glm::vec3 origin;     // 광선의 시작점
+	glm::vec3 direction;  // 광선의 방향
+
+	void ScreenToWorld(int x, int y, const glm::mat4& View_mat, const glm::mat4& Projection_mat, int Viewport_Width, int Viewport_Height) {
+		// Unproject를 통해 스크린 좌표를 월드 좌표로 변환
+		glm::vec3 winCoord(x, Viewport_Height - y, 0.0f);
+		origin = glm::unProject(winCoord, View_mat, Projection_mat, glm::vec4(0, 0, Viewport_Width, Viewport_Height));
+
+		winCoord.z = 1.0f;
+		direction = glm::unProject(winCoord, View_mat, Projection_mat, glm::vec4(0, 0, Viewport_Width, Viewport_Height));
+
+		// 방향 벡터 계산
+		direction = glm::normalize(direction - origin);
+	}
+};
+
+// 충돌검사
+bool CheckCollision(const Ray& ray, const GLObj& box) {
+	glm::vec3 min = (box.min * box.scale) + box.pos, max = (box.max * box.scale) + box.pos;
+	glm::vec3 invDirection = 1.0f / ray.direction;
+
+	glm::vec3 tmin = (min - ray.origin) * invDirection;
+	glm::vec3 tmax = (max - ray.origin) * invDirection;
+
+	glm::vec3 tmin_values = glm::min(tmin, tmax);
+	glm::vec3 tmax_values = glm::max(tmin, tmax);
+
+	float t_enter = glm::max(glm::max(tmin_values.x, tmin_values.y), tmin_values.z);
+	float t_exit = glm::min(glm::min(tmax_values.x, tmax_values.y), tmax_values.z);
+
+	return t_enter <= t_exit;
+}
+
 float winSizex = 800, winSizey = 800;
 GLuint vao;
 
@@ -47,6 +82,8 @@ GLfloat Zoom = 2.f;
 bool Lbt = false;
 glm::vec3 click_mouse{};
 
+glm::mat4 Projection_Mat = glm::mat4(1.0f);
+
 int main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
 	//--- 윈도우 생성하기
@@ -54,7 +91,7 @@ int main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowPosition(300, 100);
 	glutInitWindowSize(winSizex, winSizey);
-	glutCreateWindow("#숙제 2");
+	glutCreateWindow("Amazing Movement");
 	//--- GLEW 초기화하기
 	glewExperimental = GL_TRUE;
 	glewInit();
@@ -104,7 +141,7 @@ GLvoid drawScene()
 	Camera.draw_prepare(ViewPosLocation, "View_Pos");
 
 	// 투영 변환
-	glm::mat4 Projection_Mat = glm::mat4(1.0f);
+	Projection_Mat = glm::mat4(1.0f);
 	Projection_Mat = glm::perspective(glm::radians(45.f), 1.f, 0.1f, 50.f);
 	glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
 	glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Camera.Camera_Mat));
@@ -148,15 +185,20 @@ GLvoid drawScene()
 		Stick[i].draw("solid");
 	}
 
-	/*glViewport(620, 620, 180, 180);
-	Camera.pos = glm::vec3{ 0.f, 0.f, 3.f };
-	Camera.Top_Update();
-	Camera.draw_prepare(ViewPosLocation, "View_Pos");
+
+	// ------------------------ 미니맵 -------------------------------------
+	// 카메라 변환
+	GLCamera Top_Camera = Camera;
+	glViewport(winSizex - 150, winSizey - 150, 150, 150);
+	Top_Camera.pos = glm::vec3{ 0.f, 3.f, 0.f };
+	Top_Camera.Top_Update();
+	Top_Camera.draw_prepare(ViewPosLocation, "View_Pos");
 
 	// 투영 변환
-	Projection_Mat = glm::mat4(1.0f);
-	Projection_Mat = glm::perspective(glm::radians(0.f), 1.f, 0.1f, 50.f);
-	glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Projection_Mat[0][0]);
+	glm::mat4 Top_Projection_Mat = glm::mat4(1.0f);
+	Top_Projection_Mat = glm::ortho(-1.f, 1.f, -1.f, 1.f, 0.001f, 100.f);
+	glUniformMatrix4fv(ProjectionLocation, 1, GL_FALSE, &Top_Projection_Mat[0][0]);
+	glUniformMatrix4fv(CameraLocation, 1, GL_FALSE, glm::value_ptr(Top_Camera.Camera_Mat));
 
 	// 광원
 	Light.Update();
@@ -188,7 +230,7 @@ GLvoid drawScene()
 		Stick[i].draw_prepare(WorldTransLocation, "World");
 		Stick[i].draw_prepare(NormalLocation, "Normal");
 		Stick[i].draw("solid");
-	}*/
+	}
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -241,6 +283,11 @@ void Keyboard(unsigned char key, int x, int y)
 		Light.revolve_theta.y -= 5.f;
 		break;
 	}
+	case 'd':
+	case 'D': {
+		Light.revolve_theta.y += 5.f;
+		break;
+	}
 	case '1': {
 		for (int i = 0; i < Stick.size(); ++i) {
 			Stick[i].scale.y = 0.5f;
@@ -261,14 +308,38 @@ void Keyboard(unsigned char key, int x, int y)
 	}
 	case '3': {
 		for (int i = 0; i < Stick.size(); ++i) {
-
+			Stick[i].scale.y = 0.5f;
+			if (((i % W_cnt) + (i / W_cnt)) % 2)
+				Stick[i].velocity.y = 0.007f;
+			else if ((i / W_cnt) % 2)
+				Stick[i].velocity.y = 0.007f;
+			else Stick[i].velocity.y = -0.007f;
 		}
 		Mod = key - '0';
 		break;
 	}
-	case 'd':
-	case 'D': {
-		Light.revolve_theta.y += 5.f;
+	case '4': {
+		for (int i = 0; i < Stick.size(); ++i) {
+			Stick[i].scale.y = 0.5f;
+			Stick[i].velocity.y = 0.f;
+		}
+		Mod = key - '0';
+		break;
+	}
+	case '5': {
+		if (Mod == 4) {
+			for (int i = 0; i < Stick.size(); ++i) {
+				if (Stick[i].scale.y == 0.7f)
+					Stick[i].velocity.y = 0.007f;
+			}
+			Mod = key - '0';
+		}
+		break;
+	}
+	case 't':
+	case 'T': {
+		if (Light.L_color.r > 0.1f) Light.L_color = glm::vec3{ 0.1f, 0.1f, 0.1f };
+		else Light.L_color = glm::vec3{ 1.f, 1.f, 1.f };
 		break;
 	}
 	case '+':
@@ -297,6 +368,71 @@ void Keyboard(unsigned char key, int x, int y)
 			color = -1;
 		}
 		color++;
+		break;
+	}
+	case 'r':
+	case 'R': {
+		Mod = 1;
+		Stick.clear();
+		//  dddd
+		{
+			do {
+				cout << "가로 몇개로 만들까용? (최소 5) : " << endl;
+				cin >> W_cnt;
+				cin.clear();
+				cin.get();
+			} while (W_cnt < 5);
+
+			do {
+				cout << "세로 몇개로 만들까용? (최소 5) : " << endl;
+				cin >> H_cnt;
+				cin.clear();
+				cin.get();
+			} while (H_cnt < 5);
+
+			std::ifstream inputFile("./OBJ/cube.obj");
+			for (int k = 0; k < H_cnt; ++k) {
+				for (int i = 0; i < W_cnt; ++i) {
+					Stick.emplace_back();
+
+					if (Stick.size() == 1)
+						Stick.back().objLoad(inputFile);
+					else
+						Stick.back() = *Stick.begin();
+
+					Stick.back().pos = glm::vec3{ (0.05 * float(i)), 0.f, (0.05 * float(k)) };
+					Stick.back().scale = glm::vec3{ 0.05f, 0.5f, 0.05f };
+					Stick.back().velocity = glm::vec3{ 0.f, VRd(rd), 0.f };
+					if (VVRd(rd))
+						Stick.back().velocity.y *= -1;
+
+					std::vector<glm::vec3> color;
+					glm::vec3 a{ 103 / 255.f, 153 / 255.f, 1.f };
+					glm::vec3 a1{ 31 / 255.f, 81 / 255.f, 183 / 255.f };
+					glm::vec3 a2{ 227 / 255.f, 196 / 255.f, 255 / 255.f };
+					glm::vec3 a3{ 137 / 255.f, 106 / 255.f, 183 / 255.f };
+					glm::vec3 a4{ 255 / 255.f, 214 / 255.f, 255 / 255.f };
+					glm::vec3 a5{ 255 / 255.f, 36 / 255.f, 163 / 255.f };
+					for (int i = 0; i < Stick.back().face_cnt * 3; ++i) {
+						color.emplace_back(a);
+						if (i == 5) a = a1;
+						else if (i == 11) a = a2;
+						else if (i == 17) a = a3;
+						else if (i == 23) a = a4;
+						else if (i == 29) a = a5;
+					}
+
+					glGenBuffers(1, &Stick.back().v_color);
+					glBindBuffer(GL_ARRAY_BUFFER, Stick.back().v_color);
+					glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+				}
+			}
+
+			glm::vec3 mid_move = (Stick.begin()->pos + Stick.back().pos) / 2.f;
+			for (int i = 0; i < Stick.size(); ++i) {
+				Stick[i].pos -= mid_move;
+			}
+		}
 		break;
 	}
 	case 'q':
@@ -343,12 +479,41 @@ GLvoid Mouse(int button, int state, int x, int y)
 		if (button == GLUT_LEFT_BUTTON) {
 			Lbt = true;
 			click_mouse = m;
+
+			if (Mod == 4) {
+				// 마우스 좌표를 3D 좌표로 변환하여 레이 생성
+				Ray ray;
+				ray.ScreenToWorld(x, y, Camera.Camera_Mat, Projection_Mat, winSizex, winSizey);
+
+				GLObj* Close_Stick = nullptr;
+				GLfloat Min_dis = 100.f;
+				int select = 0;
+
+				for (int i = 0; i < Stick.size(); ++i) {
+					// 레이와 객체 충돌 검사
+					if (CheckCollision(ray, Stick[i])) {
+						// 오브젝트와의 거리 계산
+						GLfloat dis = glm::length(Stick[i].pos - ray.origin);
+
+						// 현재까지 가장 가까운 오브젝트보다 가까우면 업데이트
+						if (dis < Min_dis) {
+							Min_dis = dis;
+							Close_Stick = const_cast<GLObj*>(&Stick[i]);
+							select = i;
+						}
+					}
+				}
+
+				if (Close_Stick != nullptr) {
+					Close_Stick->scale.y = 0.7f;
+				}
+			}
 		}
-	}
-	else if (state == GLUT_DOWN) {
-		if (button == GLUT_LEFT_BUTTON) {
-			Lbt = false;
-			click_mouse = glm::vec3{ 0.f, 0.f, 0.f };
+		else if (state == GLUT_DOWN) {
+			if (button == GLUT_LEFT_BUTTON) {
+				Lbt = false;
+				click_mouse = glm::vec3{ 0.f, 0.f, 0.f };
+			}
 		}
 	}
 }
@@ -404,10 +569,19 @@ void Init()
 
 	//  dddd
 	{
-		//cout << "가로 몇개로 만들까용? : " << endl;
-		//cin >> W_cnt;
-		//cout << "세로 몇개로 만들까용? : " << endl;
-		//cin >> H_cnt;
+		do {
+			cout << "가로 몇개로 만들까용? (최소 5) : " << endl;
+			cin >> W_cnt;
+			cin.clear();
+			cin.get();
+		} while (W_cnt < 5);
+
+		do {
+			cout << "세로 몇개로 만들까용? (최소 5) : " << endl;
+			cin >> H_cnt;
+			cin.clear();
+			cin.get();
+		} while (H_cnt < 5);
 
 		std::ifstream inputFile("./OBJ/cube.obj");
 		for (int k = 0; k < H_cnt; ++k) {
@@ -489,6 +663,23 @@ void Init()
 		glBufferData(GL_ARRAY_BUFFER, sizeof(line), line, GL_STATIC_DRAW);
 
 		lineObj = GLLine({ 0.0f, 0.0f, 0.0f });
+	}
+
+	{
+		cout << endl << "------------------명령어-----------------" << endl <<
+			"1: 애니메이션 1" << endl <<
+			"2: 애니메이션 2" << endl <<
+			"3: 애니메이션 3 ( 와플 모양 ) " << endl <<
+			"4: 애니메이션 할 객체 선택  (마우스로 객체 선택)" << endl <<
+			"5: 선택한 객체 애니메이션" << endl <<
+			"t / T: 조명을 켠다/끈다 (토글)" << endl <<
+			"c: 조명 색을 바꾼다." << endl <<	
+			"마우스 좌/우 드래그: 카메라가 바닥의 y축을 기준으로 양/음 방향으로 회전한다." << endl <<
+			"a / d: 조명이 바닥의 y축을 기준으로 양/음 방향으로 회전한다." << endl <<
+			"+/-: 육면체 이동하는 속도 증가/감소" << endl <<
+			"r: 모든 값 초기화" << endl <<
+			"q: 프로그램 종료" << endl << 
+			"----------------------------------------" << endl << endl;
 	}
 }
 
