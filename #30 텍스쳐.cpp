@@ -24,28 +24,26 @@ void Init();
 void TimerFunction(int value);
 void Keyboard(unsigned char key, int x, int y);
 void Special_Keyboard(int key, int x, int y);
-
-void Sierpinski();
+void MouseWheel(int wheel, int diretion, int x, int y);
 
 using namespace std;
 
 float winSizex = 800, winSizey = 800;
 GLuint vao;
 
-vector <GLObj> Pyramid;
-vector <GLObj> Snow;
-vector <GLObj> Planet;
+GLObj Object[2];
 GLLine lineObj;
 GLCamera Camera;
 GLLight Light;
 GLObj Floor;
 
-int P_cnt = 0;
+int mod = 0;
 bool Lbt = false, Snow_mod = false;
 glm::vec3 click_mouse{};
 
 static std::uniform_real_distribution<GLfloat> Size(0.0f, 0.01f);
 static std::uniform_real_distribution<GLfloat> Pos(-1.f, 1.f);
+
 
 int main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 {
@@ -54,16 +52,16 @@ int main(int argc, char** argv) //--- 윈도우 출력하고 콜백함수 설정
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
 	glutInitWindowPosition(300, 100);
 	glutInitWindowSize(winSizex, winSizey);
-	glutCreateWindow("#28 눈 내리는 피라미드");
+	glutCreateWindow("#30 텍스쳐");
 	//--- GLEW 초기화하기
 	glewExperimental = GL_TRUE;
 	glewInit();
 	make_shaderProgram();
 	InitBuffer();
 	Init();
-	//Clear();
 	glutMouseFunc(Mouse);
 	glutMotionFunc(Motion);
+	glutMouseWheelFunc(MouseWheel);
 	glutKeyboardFunc(Keyboard); // 키보드 입력 콜백함수
 	glutSpecialFunc(Special_Keyboard); // 키보드 입력 콜백함수
 	glutTimerFunc(10, TimerFunction, 1);
@@ -80,25 +78,31 @@ GLvoid drawScene()
 	int PosLocation = glGetAttribLocation(shaderProgramID, "in_Position"); //	: 0
 	int ColorLocation = glGetAttribLocation(shaderProgramID, "in_Color"); //	: 1
 	int NormalLocation = glGetAttribLocation(shaderProgramID, "in_Normal");
+	int UvLocation = glGetAttribLocation(shaderProgramID, "in_Uv");
 	unsigned int WorldTransLocation = glGetUniformLocation(shaderProgramID, "World_trans");
 	unsigned int CameraLocation = glGetUniformLocation(shaderProgramID, "Camera_trans");
 	unsigned int ProjectionLocation = glGetUniformLocation(shaderProgramID, "Projection_trans");
-	unsigned int NormalTransLocation = glGetUniformLocation(shaderProgramID, "Normal_trans");
 	glEnableVertexAttribArray(PosLocation);
 	glEnableVertexAttribArray(ColorLocation);
 	glEnableVertexAttribArray(NormalLocation);
+	glEnableVertexAttribArray(UvLocation);
 	glEnableVertexAttribArray(WorldTransLocation);
-	glEnableVertexAttribArray(NormalTransLocation);
+
 
 	// 프래그먼트 쉐이더에게 전달
 	int LightPosLocation = glGetUniformLocation(shaderProgramID, "Light_Pos");
 	unsigned int LightColorLocation = glGetUniformLocation(shaderProgramID, "Light_Color");
 	unsigned int ViewPosLocation = glGetUniformLocation(shaderProgramID, "View_Pos");
 	unsigned int DistanceLocation = glGetUniformLocation(shaderProgramID, "Distance");
+	unsigned int TexSamplerLocation = glGetUniformLocation(shaderProgramID, "out_Tex");
+	unsigned int TexorColorLocation = glGetUniformLocation(shaderProgramID, "Tex_or_Color");
 	glEnableVertexAttribArray(LightPosLocation);
 	glEnableVertexAttribArray(LightColorLocation);
 	glEnableVertexAttribArray(ViewPosLocation);
 	glEnableVertexAttribArray(DistanceLocation);
+	glEnableVertexAttribArray(TexorColorLocation);
+
+	glUniform1i(TexSamplerLocation, 0);
 
 	// 카메라 변환
 	Camera.Update();
@@ -121,6 +125,7 @@ GLvoid drawScene()
 	Light.Update();
 	Light.draw_prepare(PosLocation, "Pos");
 	Light.draw_prepare(ColorLocation, "Color");
+	Light.draw_prepare(TexorColorLocation, "Color_bool");
 	Light.draw_prepare(NormalLocation, "Normal");
 	Light.draw_prepare(WorldTransLocation, "World");
 	Light.draw_prepare(LightPosLocation, "LightPos");
@@ -130,63 +135,42 @@ GLvoid drawScene()
 	lineObj.Update();
 	lineObj.draw_prepare(PosLocation, "Pos");
 	lineObj.draw_prepare(ColorLocation, "Color");
+	glUniform1i(TexorColorLocation, false);
 	lineObj.draw_prepare(WorldTransLocation, "World");
 	lineObj.draw();
 
-	Floor.Update();
-	Floor.Normal_Update();
-	Floor.draw_prepare(PosLocation, "Pos");
-	Floor.draw_prepare(ColorLocation, "Color");
-	Floor.draw_prepare(WorldTransLocation, "World");
-	Floor.draw_prepare(NormalLocation, "Normal");
-	Floor.draw("solid");
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (int i = 0; i < Planet.size(); ++i) {
-		Planet[i].Update();
-		Planet[i].Normal_Update();
-		Planet[i].draw_prepare(PosLocation, "Pos");
-		Planet[i].draw_prepare(ColorLocation, "Color");
-		Planet[i].draw_prepare(WorldTransLocation, "World");
-		Planet[i].draw_prepare(NormalTransLocation, "Normal_mat");
-		Planet[i].draw_prepare(NormalLocation, "Normal");
-		glUniform1f(DistanceLocation, distance(Light.pos, Planet[i].pos));
-		Planet[i].draw("solid");
-	}
+	Object[mod].Update();
+	Object[mod].draw_prepare(PosLocation, "Pos");
+	Object[mod].draw_prepare(WorldTransLocation, "World");
+	Object[mod].draw_prepare(NormalLocation, "Normal");
+	Object[mod].draw_prepare(UvLocation, "UV");
+	Object[mod].draw_prepare(false, "Texture");
+	Object[mod].draw_prepare(TexorColorLocation, "Texture_bool");
+	glUniform1f(DistanceLocation, distance(Light.pos, Object[mod].pos));
+	Object[mod].draw("solid");
 
-	for (int i = 0; i < Pyramid.size(); ++i) {
-		Pyramid[i].Update();
-		Pyramid[i].Normal_Update();
-		Pyramid[i].draw_prepare(PosLocation, "Pos");
-		Pyramid[i].draw_prepare(ColorLocation, "Color");
-		Pyramid[i].draw_prepare(WorldTransLocation, "World");
-		Pyramid[i].draw_prepare(NormalTransLocation, "Normal_mat");
-		Pyramid[i].draw_prepare(NormalLocation, "Normal");
-		glUniform1f(DistanceLocation, distance(Light.pos, Pyramid[i].pos));
-		Pyramid[i].draw("solid");
-	}
 
-	for (int i = 1; i < Snow.size(); ++i) {
-		Snow[i].Update();
-		Snow[i].draw_prepare(PosLocation, "Pos");
-		Snow[i].draw_prepare(ColorLocation, "Color");
-		Snow[i].draw_prepare(WorldTransLocation, "World");
-		Snow[i].draw_prepare(NormalLocation, "Normal");
-		Snow[i].draw("solid");
-	}
+	glDisable(GL_BLEND);			
+
 
 	glDisable(GL_DEPTH_TEST);
 
 	glDisableVertexAttribArray(PosLocation);
 	glDisableVertexAttribArray(ColorLocation);
 	glDisableVertexAttribArray(NormalLocation);
+	glDisableVertexAttribArray(UvLocation);
 	glDisableVertexAttribArray(WorldTransLocation);
 	glDisableVertexAttribArray(LightPosLocation);
 	glDisableVertexAttribArray(LightColorLocation);
 	glDisableVertexAttribArray(ViewPosLocation);
 	glDisableVertexAttribArray(ProjectionLocation);
 	glDisableVertexAttribArray(CameraLocation);
-	glDisableVertexAttribArray(NormalTransLocation);
 	glDisableVertexAttribArray(DistanceLocation);
+	glDisableVertexAttribArray(TexorColorLocation);
+	glDisableVertexAttribArray(TexSamplerLocation);
 
 	glutSwapBuffers();
 }
@@ -196,42 +180,7 @@ void TimerFunction(int value)
 	switch (value)
 	{
 	case 1: {
-		Planet[0].revolve_theta += glm::vec3{ 0.f, 0.f, 1.f };
-		Planet[1].revolve_theta += glm::vec3{ 0.f, 1.f, 0.f };
-		Planet[2].revolve_theta += glm::vec3{ 1.f, 0.f, 0.f };
 
-
-		if (Snow_mod) {
-			//  Snow 생성
-			{
-				Snow.emplace_back(*Snow.begin());
-
-				GLfloat size = Size(rd);
-				Snow.back().pos = glm::vec3{ Pos(rd), 1.3f, Pos(rd) };
-				Snow.back().scale = glm::vec3{ size, size, size };
-
-				std::vector<glm::vec3> color;
-				glm::vec3 a{ 1.f, 1.f, 1.f };
-				for (int i = 0; i < Snow.back().face_cnt * 3; ++i) {
-					color.emplace_back(a);
-				}
-
-				glGenBuffers(1, &Snow.back().v_color);
-				glBindBuffer(GL_ARRAY_BUFFER, Snow.back().v_color);
-				glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
-			}
-
-			for (int i = 1; i < Snow.size(); ++i) {
-				if (Snow[i].pos.y <= -0.38f && Snow.size() > 1000) {
-					Snow.erase(Snow.begin() + i);
-					--i;
-				}
-				else if (Snow[i].pos.y < -0.38f)
-					Snow[i].pos.y = -0.38f;
-
-				Snow[i].pos.y -= 0.003f;
-			}
-		}
 		break;
 	}
 	default:
@@ -246,6 +195,12 @@ void Keyboard(unsigned char key, int x, int y)
 {
 	switch (key)
 	{
+	case 'c':
+	case 'C': {
+		if (mod) mod = 0;
+		else mod = 1;
+		break;
+	}
 	case 'a':
 	case 'A': {
 		Light.revolve_theta.y -= 5.f;
@@ -254,61 +209,6 @@ void Keyboard(unsigned char key, int x, int y)
 	case 'd':
 	case 'D': {
 		Light.revolve_theta.y += 5.f;
-		break;
-	}
-	case '+':
-	case '=': {
-		Sierpinski();
-		break;
-	}
-	case 'P':
-	case 'p': {
-		if (P_cnt == 0)
-			Light.pos = glm::vec3{ 1.f, 0.f, 0.f };
-		else if (P_cnt == 1)
-			Light.pos = glm::vec3{ -1.f, 0.f, 0.f };
-		else if (P_cnt == 2)
-			Light.pos = glm::vec3{ 0.f, 0.f, 1.f };
-		else if (P_cnt == 3)
-			Light.pos = glm::vec3{ 0.f, 0.f, -1.f };
-
-		P_cnt++;
-		if (P_cnt == 4)
-			P_cnt = 0;
-		break;
-	}
-	case '1':	// 피라미드 초기화
-	case '!': {
-		//  Pyramid
-		{
-			Pyramid.clear();
-			std::ifstream inputFile("./OBJ/pyramid.obj");
-			Pyramid.emplace_back();
-
-			if (inputFile.is_open())
-				Pyramid.back().objLoad(inputFile);
-			else
-				std::cerr << "Failed to obj file" << std::endl;
-
-			Pyramid.back().pos = glm::vec3{ 0.f, 0.f, 0.f };
-			Pyramid.back().scale = glm::vec3{ 0.5f, 0.5f, 0.5f };
-
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 103 / 255.f, 153 / 255.f, 1.f };
-			for (int i = 0; i < Pyramid.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
-
-			glGenBuffers(1, &Pyramid.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Pyramid.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
-		}
-		break;
-	}
-	case 's':
-	case 'S': {
-		if (Snow_mod) Snow_mod = false;
-		else Snow_mod = true;
 		break;
 	}
 	case 'n':
@@ -323,28 +223,6 @@ void Keyboard(unsigned char key, int x, int y)
 			Light.pos += glm::vec3{ 0.0f, 0.f, 0.02f };
 		break;
 	}
-	case 'c':
-	case 'C': {
-		static int color = 1;
-		if (color == 0)
-			Light.L_color = glm::vec3{ 1.f, 1.f, 1.f };
-		else if (color == 1)
-			Light.L_color = glm::vec3{ 1.f, 0.1f, 0.1f };
-		else if (color == 2)
-			Light.L_color = glm::vec3{ 0.1f, 1.f, 0.1f };
-		else if (color == 3) {
-			Light.L_color = glm::vec3{ 0.1f, 0.1f, 1.f };
-			color = -1;
-		}
-		color++;
-		break;
-	}
-	case 'm':
-	case 'M': {
-		if (Light.L_color.r > 0.1f) Light.L_color = glm::vec3{ 0.1f, 0.1f, 0.1f };
-		else Light.L_color = glm::vec3{ 1.f, 1.f, 1.f };
-		break;
-	}
 	case 'q':
 	case 'Q': {
 		exit(829);
@@ -354,48 +232,6 @@ void Keyboard(unsigned char key, int x, int y)
 	}
 
 	glutPostRedisplay(); // 화면 재 출력
-}
-
-void Sierpinski()
-{
-	int cnt = Pyramid.size();
-
-	for (int k = 0; k < cnt; ++k) {
-		for (int i = 0; i < 5; ++i) {
-			Pyramid.emplace_back(*Pyramid.begin());
-			Pyramid.back().scale = Pyramid.begin()->scale / 2.f;
-
-			if (i == 0){ // 위에 놈
-				Pyramid.back().pos = Pyramid.begin()->pos;
-				Pyramid.back().pos.y += ((Pyramid.begin()->scale.y * 10.f) / 4.f);
-			}
-			else if (i == 1) { // 왼쪽 위 놈
-				Pyramid.back().pos = Pyramid.begin()->pos;
-				Pyramid.back().pos.x -= ((Pyramid.begin()->scale.x * 10.f) / 4.f);
-				Pyramid.back().pos.y -= ((Pyramid.begin()->scale.y * 10.f) / 4.f);
-				Pyramid.back().pos.z -= ((Pyramid.begin()->scale.z * 10.f) / 4.f);
-			}
-			else if (i == 2) { // 오른쪽 위 놈
-				Pyramid.back().pos = Pyramid.begin()->pos;
-				Pyramid.back().pos.x += ((Pyramid.begin()->scale.x * 10.f) / 4.f);
-				Pyramid.back().pos.y -= ((Pyramid.begin()->scale.y * 10.f) / 4.f);
-				Pyramid.back().pos.z -= ((Pyramid.begin()->scale.z * 10.f) / 4.f);
-			}
-			else if (i == 3) { // 왼쪽 아래 놈
-				Pyramid.back().pos = Pyramid.begin()->pos;
-				Pyramid.back().pos.x -= ((Pyramid.begin()->scale.x * 10.f) / 4.f);
-				Pyramid.back().pos.y -= ((Pyramid.begin()->scale.y * 10.f) / 4.f);
-				Pyramid.back().pos.z += ((Pyramid.begin()->scale.z * 10.f) / 4.f);
-			}
-			else if (i == 4) { // 오른쪽 아래 놈
-				Pyramid.back().pos = Pyramid.begin()->pos;
-				Pyramid.back().pos.x += ((Pyramid.begin()->scale.x * 10.f) / 4.f);
-				Pyramid.back().pos.y -= ((Pyramid.begin()->scale.y * 10.f) / 4.f);
-				Pyramid.back().pos.z += ((Pyramid.begin()->scale.z * 10.f) / 4.f);
-			}
-		}
-		Pyramid.erase(Pyramid.begin());
-	}
 }
 
 void Special_Keyboard(int key, int x, int y)
@@ -443,9 +279,9 @@ GLvoid Motion(int x, int y)
 		glm::vec3 m = { (x - (winSizex / 2)) / (winSizex / 2), -(y - (winSizey / 2)) / (winSizey / 2), 0.0f };
 
 		if (m.x < click_mouse.x)
-			Camera.revolve_theta.z += 1.f;
+			Camera.revolve_theta.y += 1.f;
 		else if (m.x > click_mouse.x)
-			Camera.revolve_theta.z += -1.f;
+			Camera.revolve_theta.y += -1.f;
 
 		if (m.y < click_mouse.y)
 			Camera.revolve_theta.x += 1.f;
@@ -456,11 +292,23 @@ GLvoid Motion(int x, int y)
 	}
 }
 
+void MouseWheel(int wheel, int diretion, int x, int y)
+{
+	// 줌인
+	if (diretion > 0) {
+		Camera.pos.z -= 0.1f;
+	}
+	// 줌아웃
+	else if (diretion < 0) {
+		Camera.pos.z += 0.1f;
+	}
+}
+
 void Init()
 {
 	glBindVertexArray(vao);
 	// 카메라
-	Camera.pos = glm::vec3{ 1.f, 1.f, 3.f };
+	Camera.pos = glm::vec3{ 0.f, 0.f, 3.f };
 
 	// Light
 	{
@@ -485,118 +333,44 @@ void Init()
 		glBindBuffer(GL_ARRAY_BUFFER, Light.v_color);
 		glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
 	}
-	//  Pyramid
-	{
-		std::ifstream inputFile("./OBJ/pyramid.obj");
-		Pyramid.emplace_back();
-
-		if (inputFile.is_open())
-			Pyramid.back().objLoad(inputFile);
-		else
-			std::cerr << "Failed to obj file" << std::endl;
-
-		Pyramid.back().pos = glm::vec3{ 0.f, 0.f, 0.f };
-		Pyramid.back().midpos = glm::vec3{ 0.f, 0.f, 0.f };
-		Pyramid.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
-
-		std::vector<glm::vec3> color;
-		glm::vec3 a{ 103 / 255.f, 153 / 255.f, 1.f };
-		for (int i = 0; i < Pyramid.back().face_cnt * 3; ++i) {
-			color.emplace_back(a);
-		}
-
-		glGenBuffers(1, &Pyramid.back().v_color);
-		glBindBuffer(GL_ARRAY_BUFFER, Pyramid.back().v_color);
-		glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
-	}
-	//  Planet
+	//  Object
 	{
 		{
-			std::ifstream inputFile("./OBJ/sphere.obj");
-			Planet.emplace_back();
+			std::ifstream inputFile("./OBJ/빼꼼/Player_1.obj");
 
 			if (inputFile.is_open())
-				Planet.back().objLoad(inputFile);
+				Object[0].objLoad(inputFile);
 			else
 				std::cerr << "Failed to obj file" << std::endl;
 
-			Planet.back().pos = glm::vec3{ 0.f, 1.0f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
+			Object[0].pos = glm::vec3{ 0.f, 0.f, 0.f };
+			Object[0].scale = glm::vec3{ 0.5f, 0.5f, 0.5f };
 
 			std::vector<glm::vec3> color;
-			glm::vec3 a{ 255 / 255.f, 203 / 255.f, 203 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
+			glm::vec3 a{ 103 / 255.f, 153 / 255.f, 1.f };
+			for (int i = 0; i < Object[0].face_cnt * 3; ++i) {
 				color.emplace_back(a);
 			}
 
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
+			glGenBuffers(1, &Object[0].v_color);
+			glBindBuffer(GL_ARRAY_BUFFER, Object[0].v_color);
 			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
-		}
 
+			Object[0].imgLoad("./OBJ/빼꼼/Backom_BODY_d_j.png");
+		}
 		{
-			Planet.emplace_back(*Planet.begin());
+			std::ifstream inputFile("./OBJ/강쥐/body.obj");
 
-			Planet.back().pos = glm::vec3{ 0.f, 0.f, 1.f };
-			Planet.back().revolve_theta = glm::vec3{ 0.f, 90.f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
+			if (inputFile.is_open())
+				Object[1].objLoad(inputFile);
+			else
+				std::cerr << "Failed to obj file" << std::endl;
 
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 206 / 255.f, 242 / 255.f, 121 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
+			Object[1].pos = glm::vec3{ 0.f, 0.f, 0.f };
+			Object[1].scale = glm::vec3{ 0.5f, 0.5f, 0.5f };
 
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+			Object[1].imgLoad("./OBJ/강쥐/Dog.png");
 		}
-
-		{
-			Planet.emplace_back(*Planet.begin());
-
-			Planet.back().pos = glm::vec3{ 0.f, 0.f, 0.8f };
-			Planet.back().revolve_theta = glm::vec3{ 0.f, 180.f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
-
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 71 / 255.f, 66 / 255.f, 219 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
-
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
-		}
-	}
-
-	{
-		std::ifstream inputFile("./OBJ/sphere.obj");
-		Snow.emplace_back();
-		Snow.back().objLoad(inputFile);
-	}
-	//  Floor
-	{
-		std::ifstream inputFile("./OBJ/cube.obj");
-
-		if (inputFile.is_open())
-			Floor.objLoad(inputFile);
-		else
-			std::cerr << "Failed to obj file" << std::endl;
-
-		Floor.pos = glm::vec3{ 0.f, -0.4f, 0.f };
-		Floor.scale = glm::vec3{ 2.f, 0.01f, 2.f };
-
-		std::vector<glm::vec3> color;
-		glm::vec3 a{ 0.4f, 0.4f, 0.4f };
-		for (int i = 0; i < Floor.face_cnt * 3; ++i) {
-			color.emplace_back(a);
-		}
-
-		glGenBuffers(1, &Floor.v_color);
-		glBindBuffer(GL_ARRAY_BUFFER, Floor.v_color);
-		glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
 	}
 
 	// X축 Y축
@@ -614,14 +388,8 @@ void Init()
 		lineObj = GLLine({ 0.0f, 0.0f, 0.0f });
 	}
 
-	cout << " c : 조명 색을 다른 색으로 바뀌도록 한다. 3종류의 다른 색을 적용해본다" << endl <<
-		" a / d : 조명의 위치를 중심의 구의 y축에 대하여 양/음 방향으로 회전한다" << endl <<
-		" n / f: 조명이 가까워지기/멀어지기" << endl << // 이거 더 해야함 28번처럼
-		" 화살표키 위 / 아래: 조명의 세기 높아지기/낮춰지기" << endl <<
-		" c: 조명 색을 다른 색으로 바뀌도록 한다. 3종류의 다른 색을 적용해본다." << endl <<
-		" m: 조명을 켜기/끄기" << endl <<
-		// " p: 조명을 (1, 0, 0) (-1, 0, 0) (0, 0, 1) (0, 0, -1) 쪽의 위치로 옮긴다." << endl <<
-		" q : 프로그램 종료" << endl;
+
+
 }
 
 //--- 다시그리기 콜백 함수
@@ -654,7 +422,7 @@ void make_shaderProgram()
 
 void make_vertexShaders()
 {
-	vertexSource = filetobuf("3d_vertex_v4_light.glsl");
+	vertexSource = filetobuf("3d_vertex_v5_light.glsl");
 	//--- 버텍스 세이더 객체 만들기
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	//--- 세이더 코드를 세이더 객체에 넣기
@@ -675,7 +443,7 @@ void make_vertexShaders()
 
 void make_fragmentShaders()
 {
-	fragmentSource = filetobuf("light_fragment_v2.glsl");
+	fragmentSource = filetobuf("uv_fragment.glsl");
 	//--- 프래그먼트 세이더 객체 만들기
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	//--- 세이더 코드를 세이더 객체에 넣기

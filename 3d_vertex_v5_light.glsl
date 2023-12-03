@@ -11,7 +11,6 @@ out vec2 out_Uv ;//--- 프래그먼트 세이더에게 전달
 out vec3 Frag_Pos; //--- 프래그먼트 세이더에게 전달
 
 uniform mat4 World_trans;
-uniform mat4 Normal_trans;
 uniform mat4 Camera_trans;
 uniform mat4 Projection_trans;
 
@@ -26,7 +25,7 @@ void main(void)
     Frag_Pos = vec3(World_trans * vec4(in_Position, 1.0));
 
     // 노멀 변환 스케일 쓰면 이상할 수도 있대 문제 생기면 그거 확인해보기
-    out_Normal = vec3(Normal_trans * vec4(in_Normal, 1.0));
+    out_Normal = vec3(transpose(inverse(World_trans)) * vec4(in_Normal, 1.0));
     out_Color = in_Color;
     out_Uv = in_Uv;
 }

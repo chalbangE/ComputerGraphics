@@ -80,25 +80,29 @@ GLvoid drawScene()
 	int PosLocation = glGetAttribLocation(shaderProgramID, "in_Position"); //	: 0
 	int ColorLocation = glGetAttribLocation(shaderProgramID, "in_Color"); //	: 1
 	int NormalLocation = glGetAttribLocation(shaderProgramID, "in_Normal");
+	int UvLocation = glGetAttribLocation(shaderProgramID, "in_Uv");
 	unsigned int WorldTransLocation = glGetUniformLocation(shaderProgramID, "World_trans");
 	unsigned int CameraLocation = glGetUniformLocation(shaderProgramID, "Camera_trans");
 	unsigned int ProjectionLocation = glGetUniformLocation(shaderProgramID, "Projection_trans");
-	unsigned int NormalTransLocation = glGetUniformLocation(shaderProgramID, "Normal_trans");
 	glEnableVertexAttribArray(PosLocation);
 	glEnableVertexAttribArray(ColorLocation);
 	glEnableVertexAttribArray(NormalLocation);
+	glEnableVertexAttribArray(UvLocation);
 	glEnableVertexAttribArray(WorldTransLocation);
-	glEnableVertexAttribArray(NormalTransLocation);
+
 
 	// 프래그먼트 쉐이더에게 전달
 	int LightPosLocation = glGetUniformLocation(shaderProgramID, "Light_Pos");
 	unsigned int LightColorLocation = glGetUniformLocation(shaderProgramID, "Light_Color");
 	unsigned int ViewPosLocation = glGetUniformLocation(shaderProgramID, "View_Pos");
 	unsigned int DistanceLocation = glGetUniformLocation(shaderProgramID, "Distance");
+	unsigned int TexSamplerLocation = glGetUniformLocation(shaderProgramID, "out_Tex");
+	unsigned int TexorColorLocation = glGetUniformLocation(shaderProgramID, "Tex_or_Color");
 	glEnableVertexAttribArray(LightPosLocation);
 	glEnableVertexAttribArray(LightColorLocation);
 	glEnableVertexAttribArray(ViewPosLocation);
 	glEnableVertexAttribArray(DistanceLocation);
+	glEnableVertexAttribArray(TexorColorLocation);
 
 	// 카메라 변환
 	Camera.Update();
@@ -121,8 +125,10 @@ GLvoid drawScene()
 	Light.Update();
 	Light.draw_prepare(PosLocation, "Pos");
 	Light.draw_prepare(ColorLocation, "Color");
+	Light.draw_prepare(TexorColorLocation, "Color_bool");
 	Light.draw_prepare(NormalLocation, "Normal");
 	Light.draw_prepare(WorldTransLocation, "World");
+	Light.draw_prepare(UvLocation, "UV");
 	Light.draw_prepare(LightPosLocation, "LightPos");
 	Light.draw_prepare(LightColorLocation, "LightColor");
 	Light.draw("solid");
@@ -130,36 +136,27 @@ GLvoid drawScene()
 	lineObj.Update();
 	lineObj.draw_prepare(PosLocation, "Pos");
 	lineObj.draw_prepare(ColorLocation, "Color");
+	glUniform1i(TexorColorLocation, false);
 	lineObj.draw_prepare(WorldTransLocation, "World");
 	lineObj.draw();
 
 	Floor.Update();
-	Floor.Normal_Update();
 	Floor.draw_prepare(PosLocation, "Pos");
 	Floor.draw_prepare(ColorLocation, "Color");
+	Floor.draw_prepare(TexorColorLocation, "Color_bool");
 	Floor.draw_prepare(WorldTransLocation, "World");
+	Floor.draw_prepare(UvLocation, "UV");
 	Floor.draw_prepare(NormalLocation, "Normal");
+	glUniform1f(DistanceLocation, distance(Light.pos, Floor.pos));
 	Floor.draw("solid");
-
-	for (int i = 0; i < Planet.size(); ++i) {
-		Planet[i].Update();
-		Planet[i].Normal_Update();
-		Planet[i].draw_prepare(PosLocation, "Pos");
-		Planet[i].draw_prepare(ColorLocation, "Color");
-		Planet[i].draw_prepare(WorldTransLocation, "World");
-		Planet[i].draw_prepare(NormalTransLocation, "Normal_mat");
-		Planet[i].draw_prepare(NormalLocation, "Normal");
-		glUniform1f(DistanceLocation, distance(Light.pos, Planet[i].pos));
-		Planet[i].draw("solid");
-	}
 
 	for (int i = 0; i < Pyramid.size(); ++i) {
 		Pyramid[i].Update();
-		Pyramid[i].Normal_Update();
 		Pyramid[i].draw_prepare(PosLocation, "Pos");
 		Pyramid[i].draw_prepare(ColorLocation, "Color");
+		Pyramid[i].draw_prepare(TexorColorLocation, "Color_bool");
 		Pyramid[i].draw_prepare(WorldTransLocation, "World");
-		Pyramid[i].draw_prepare(NormalTransLocation, "Normal_mat");
+		Pyramid[i].draw_prepare(UvLocation, "UV");
 		Pyramid[i].draw_prepare(NormalLocation, "Normal");
 		glUniform1f(DistanceLocation, distance(Light.pos, Pyramid[i].pos));
 		Pyramid[i].draw("solid");
@@ -169,24 +166,47 @@ GLvoid drawScene()
 		Snow[i].Update();
 		Snow[i].draw_prepare(PosLocation, "Pos");
 		Snow[i].draw_prepare(ColorLocation, "Color");
+		Snow[i].draw_prepare(TexorColorLocation, "Color_bool");
+		Snow[i].draw_prepare(UvLocation, "UV");
 		Snow[i].draw_prepare(WorldTransLocation, "World");
 		Snow[i].draw_prepare(NormalLocation, "Normal");
 		Snow[i].draw("solid");
 	}
+
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	for (int i = 0; i < Planet.size(); ++i) {
+		Planet[i].Update();
+		Planet[i].draw_prepare(PosLocation, "Pos");
+		Planet[i].draw_prepare(WorldTransLocation, "World");
+		Planet[i].draw_prepare(NormalLocation, "Normal");
+		Planet[i].draw_prepare(UvLocation, "UV");
+		Planet[i].draw_prepare(false, "Texture");
+		Planet[i].draw_prepare(TexorColorLocation, "Texture_bool");
+		glUniform1f(DistanceLocation, distance(Light.pos, Planet[i].pos));
+		Planet[i].draw("solid");
+	}
+
+	glDisable(GL_BLEND);
+
 
 	glDisable(GL_DEPTH_TEST);
 
 	glDisableVertexAttribArray(PosLocation);
 	glDisableVertexAttribArray(ColorLocation);
 	glDisableVertexAttribArray(NormalLocation);
+	glDisableVertexAttribArray(UvLocation);
 	glDisableVertexAttribArray(WorldTransLocation);
 	glDisableVertexAttribArray(LightPosLocation);
 	glDisableVertexAttribArray(LightColorLocation);
 	glDisableVertexAttribArray(ViewPosLocation);
 	glDisableVertexAttribArray(ProjectionLocation);
 	glDisableVertexAttribArray(CameraLocation);
-	glDisableVertexAttribArray(NormalTransLocation);
 	glDisableVertexAttribArray(DistanceLocation);
+	glDisableVertexAttribArray(TexorColorLocation);
+	glDisableVertexAttribArray(TexSamplerLocation);
 
 	glutSwapBuffers();
 }
@@ -196,10 +216,6 @@ void TimerFunction(int value)
 	switch (value)
 	{
 	case 1: {
-		Planet[0].revolve_theta += glm::vec3{ 0.f, 0.f, 1.f };
-		Planet[1].revolve_theta += glm::vec3{ 0.f, 1.f, 0.f };
-		Planet[2].revolve_theta += glm::vec3{ 1.f, 0.f, 0.f };
-
 
 		if (Snow_mod) {
 			//  Snow 생성
@@ -365,7 +381,7 @@ void Sierpinski()
 			Pyramid.emplace_back(*Pyramid.begin());
 			Pyramid.back().scale = Pyramid.begin()->scale / 2.f;
 
-			if (i == 0){ // 위에 놈
+			if (i == 0) { // 위에 놈
 				Pyramid.back().pos = Pyramid.begin()->pos;
 				Pyramid.back().pos.y += ((Pyramid.begin()->scale.y * 10.f) / 4.f);
 			}
@@ -500,7 +516,7 @@ void Init()
 		Pyramid.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
 
 		std::vector<glm::vec3> color;
-		glm::vec3 a{ 103 / 255.f, 153 / 255.f, 1.f };
+		glm::vec3 a{ 34 / 255.f, 116 / 255.f, 28 / 255.f };
 		for (int i = 0; i < Pyramid.back().face_cnt * 3; ++i) {
 			color.emplace_back(a);
 		}
@@ -512,7 +528,7 @@ void Init()
 	//  Planet
 	{
 		{
-			std::ifstream inputFile("./OBJ/sphere.obj");
+			std::ifstream inputFile("./OBJ/cube_tex.obj");
 			Planet.emplace_back();
 
 			if (inputFile.is_open())
@@ -520,54 +536,22 @@ void Init()
 			else
 				std::cerr << "Failed to obj file" << std::endl;
 
-			Planet.back().pos = glm::vec3{ 0.f, 1.0f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
+			Planet.back().scale = glm::vec3{ 0.5f, 0.5f, 0.5f };
+			Planet.back().pos = glm::vec3{ 0.f, -0.4f + (Planet.back().scale.y * (Planet.back().max.y - Planet.back().min.y)) / 2.f, 0.8f };
 
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 255 / 255.f, 203 / 255.f, 203 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
-
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+			Planet.back().imgLoad("./IMG/IMG_0204_a.png");
 		}
 
 		{
 			Planet.emplace_back(*Planet.begin());
 
-			Planet.back().pos = glm::vec3{ 0.f, 0.f, 1.f };
-			Planet.back().revolve_theta = glm::vec3{ 0.f, 90.f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
-
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 206 / 255.f, 242 / 255.f, 121 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
-
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+			Planet.back().pos = glm::vec3{ -0.8f, -0.4f + (Planet.back().scale.y * (Planet.back().max.y - Planet.back().min.y)) / 2.f, 0.f };
 		}
 
 		{
 			Planet.emplace_back(*Planet.begin());
 
-			Planet.back().pos = glm::vec3{ 0.f, 0.f, 0.8f };
-			Planet.back().revolve_theta = glm::vec3{ 0.f, 180.f, 0.f };
-			Planet.back().scale = glm::vec3{ 0.08f, 0.08f, 0.08f };
-
-			std::vector<glm::vec3> color;
-			glm::vec3 a{ 71 / 255.f, 66 / 255.f, 219 / 255.f };
-			for (int i = 0; i < Planet.back().face_cnt * 3; ++i) {
-				color.emplace_back(a);
-			}
-
-			glGenBuffers(1, &Planet.back().v_color);
-			glBindBuffer(GL_ARRAY_BUFFER, Planet.back().v_color);
-			glBufferData(GL_ARRAY_BUFFER, color.size() * sizeof(glm::vec3), color.data(), GL_STATIC_DRAW);
+			Planet.back().pos = glm::vec3{ 0.8f, -0.4f + (Planet.back().scale.y * (Planet.back().max.y - Planet.back().min.y)) / 2.f, 0.f };
 		}
 	}
 
@@ -578,7 +562,7 @@ void Init()
 	}
 	//  Floor
 	{
-		std::ifstream inputFile("./OBJ/cube.obj");
+		std::ifstream inputFile("./OBJ/cube_tex.obj");
 
 		if (inputFile.is_open())
 			Floor.objLoad(inputFile);
@@ -586,10 +570,10 @@ void Init()
 			std::cerr << "Failed to obj file" << std::endl;
 
 		Floor.pos = glm::vec3{ 0.f, -0.4f, 0.f };
-		Floor.scale = glm::vec3{ 2.f, 0.01f, 2.f };
+		Floor.scale = glm::vec3{ 4.f, 0.01f, 4.f };
 
 		std::vector<glm::vec3> color;
-		glm::vec3 a{ 0.4f, 0.4f, 0.4f };
+		glm::vec3 a{ 219 / 255.f, 0.f, 0.f };
 		for (int i = 0; i < Floor.face_cnt * 3; ++i) {
 			color.emplace_back(a);
 		}
@@ -654,7 +638,7 @@ void make_shaderProgram()
 
 void make_vertexShaders()
 {
-	vertexSource = filetobuf("3d_vertex_v4_light.glsl");
+	vertexSource = filetobuf("3d_vertex_v5_light.glsl");
 	//--- 버텍스 세이더 객체 만들기
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	//--- 세이더 코드를 세이더 객체에 넣기
@@ -675,7 +659,7 @@ void make_vertexShaders()
 
 void make_fragmentShaders()
 {
-	fragmentSource = filetobuf("light_fragment_v2.glsl");
+	fragmentSource = filetobuf("uv_fragment.glsl");
 	//--- 프래그먼트 세이더 객체 만들기
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	//--- 세이더 코드를 세이더 객체에 넣기

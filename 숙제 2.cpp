@@ -331,6 +331,7 @@ void Keyboard(unsigned char key, int x, int y)
 			for (int i = 0; i < Stick.size(); ++i) {
 				if (Stick[i].scale.y == 0.7f)
 					Stick[i].velocity.y = 0.007f;
+				else Stick[i].velocity.y = -0.007f;
 			}
 			Mod = key - '0';
 		}
