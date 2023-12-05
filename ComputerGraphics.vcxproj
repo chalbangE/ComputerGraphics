@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="#32.cpp" />
+    <ClCompile Include="#32 배경화면.cpp" />
     <ClCompile Include="GLCamera.cpp" />
     <ClCompile Include="GLLight.cpp" />
     <ClCompile Include="GLLine.cpp" />
@@ -37,8 +37,8 @@
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="3d_vertex_v5_light.glsl" />
-    <None Include="uv_fragment.glsl" />
+    <None Include="uv_fragment_v2.glsl" />
+    <None Include="uv_vertex_v2.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -359,6 +359,11 @@ void GLObj::Normal_Update()
 	Normal_mat = glm::translate(Normal_mat, -midpos);
 }
 
+void GLObj::Bg_Update()
+{
+	World_mat = glm::scale(World_mat, scale);
+}
+
 void GLObj::Update20()
 {
 	World_mat = glm::mat4(1.0);

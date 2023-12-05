@@ -29,6 +29,7 @@ public:
 
     void Update();
     void Normal_Update();
+    void Bg_Update();
     void Update20();
     void Update22();
     void Update24();

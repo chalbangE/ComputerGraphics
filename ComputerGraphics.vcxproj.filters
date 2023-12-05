@@ -33,7 +33,7 @@
     <ClCompile Include="GLLight.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="#32.cpp">
+    <ClCompile Include="#32 배경화면.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -61,10 +61,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="uv_fragment.glsl">
+    <None Include="uv_fragment_v2.glsl">
       <Filter>소스 파일</Filter>
     </None>
-    <None Include="3d_vertex_v5_light.glsl">
+    <None Include="uv_vertex_v2.glsl">
       <Filter>소스 파일</Filter>
     </None>
   </ItemGroup>
